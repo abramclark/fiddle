@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<style>
+html, body { margin:0; height:100%; }
+canvas { width:100%; height:100%; }
+</style>
+<script type='text/javascript' src='glsl.js'></script>
+<script type='text/javascript' src='jquery.js'></script>
+<canvas id="game"></canvas>
+
+<script id="fragment" type="x-shader/x-fragment">
+precision mediump float;
+uniform vec2 resolution;
+uniform float time;
+
+struct Ball {
+    vec2 center;
+    float radius;
+};
+
+uniform Ball balls[10];
+uniform int ballsLength;
+
+bool inCircle (vec2 p, vec2 center, float radius) {
+    vec2 ratio = resolution.xy / resolution.x;
+    return distance(p*ratio, center*ratio) < radius;
+}
+
+bool inBall(vec2 p, Ball b) {
+    return inCircle(p, b.center, b.radius);
+}
+
+void main () {
+    vec2 p = gl_FragCoord.xy / resolution.xy;
+    float z = 0.5+0.5*smoothstep(-1.0, 1.0, cos(time * 0.005));
+    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+
+    for (int i=0; i<10; ++i) { if (i>=ballsLength) break;
+        if (inBall(p, balls[i])) {
+            gl_FragColor = vec4(p.x, p.y, z, 1.0);
+        }
+    }
+}
+</script>
+ 
+<script type="text/javascript">
+if (!Glsl.supported()) alert("WebGL is not supported.");
+var canvas = $('canvas')
+var resize = function(){
+    var pixels = [canvas.width(), canvas.height()]
+        // ,s = Math.max.apply(null, pixels) / 1000
+    canvas.attr('width', pixels[0]).attr('height', pixels[1])
+    // d.translate(pixels[0] / 2, pixels[1] / 2)
+    // d.scale(s, s)
+    // d.save()
+}
+window.onresize = resize; resize()
+
+function Ball(center, radius, velocity){
+    var o = {
+        center: center
+        ,radius: radius
+        ,velocity: velocity
+    }
+    o.update = function(time, delta){
+        [0,1].map(function(c){
+            o.center[c] = o.center[c] + o.velocity[c] * delta
+            if(o.center[c] < 0 || o.center[c] > 1){
+                o.velocity[c] *= -1
+                o.center[c] = Math.max(0, Math.min(o.center[c], 1))
+            }
+        })
+    }
+    return o
+}
+
+Glsl({
+    canvas: canvas[0]
+    ,fragment: $('#fragment').html()
+    ,variables: {
+        time: 0,
+        balls: [],
+        ballsLength: 0
+    }
+    ,init: function () {
+        for (var i = 0; i<10; ++i) {
+            this.variables.balls.push(Ball([Math.random(), Math.random()], 0.01+0.01*Math.random(), [0.001*Math.random(), 0.001*Math.random()] ));
+        }
+    }
+    ,update: function(time, delta){
+        this.set("time", time);
+        this.variables.balls.forEach(function (ball) {
+            ball.update(time, delta);
+        });
+        this.set("ballsLength", this.variables.balls.length);
+        this.sync("balls");
+    }
+}).start()
+</script>
