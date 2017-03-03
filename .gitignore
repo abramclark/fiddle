@@ -1,1 +1,8 @@
-*.DS_Store
+.DS_Store
+*.swp
+.project
+node_modules
+.idea/
+*.png
+*.jpg
+*.zip

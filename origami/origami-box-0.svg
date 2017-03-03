@@ -1,0 +1,39 @@
+<svg viewBox='0 0 510 510' version='1.1' xmlns='http://www.w3.org/2000/svg'>
+<style>
+rect, polyline { fill:none; }
+line, rect, polyline { stroke-width:.5; stroke:#888; }
+.bold { stroke-width:1; stroke:black; }
+</style>
+
+<!--<path stroke='green' fill='none' stroke-width='2' d='M30,0 V30 H0'/>-->
+
+<rect class='bold' width='500' height='500' x='5' y='5' />
+<line class='bold' x1='5' y1='505' x2='505' y2='5' />
+<line class='bold' x1='5' y1='5' x2='505' y2='505' />
+
+<rect class='bold' transform='translate(255 255) rotate(45) '
+  width='353.5' height='353.5' x='-177' y='-177' />
+
+<line transform='translate(5 67.5)' x1='0' y1='0  ' x2='500' y2='0  ' />
+<line transform='translate(5 67.5)' x1='0' y1='125' x2='500' y2='125' />
+<line transform='translate(5 67.5)' x1='0' y1='250' x2='500' y2='250' />
+<line transform='translate(5 67.5)' x1='0' y1='375' x2='500' y2='375' />
+
+<line x1='255' y1='5' x2='255' y2='505' />
+<line transform='translate( 62.5 0)' x1='255' y1='5' x2='255' y2='505' />
+<line transform='translate(-62.5 0)' x1='255' y1='5' x2='255' y2='505' />
+
+<polyline transform='translate(255 5) rotate(0)' points='-125,0 0,130 125,0' />
+<polyline transform='translate(255 505) rotate(180)' points='-125,0 0,130 125,0' />
+
+</svg>
+
+<!--
+
+stroke-width='1' stroke='black' fill='none' 
+stroke-width='1' stroke='black' fill='none' 
+
+
+
+
+-->
