@@ -1,1 +1,1 @@
-/Users/abram/data/term-vectors/stanford-glove/glove.6B.50d.txt
+../../data/term-vectors/stanford-glove/glove.6B.50d.txt
