@@ -11,7 +11,7 @@ import periodictable # todo: add melting and boiling temps
 pt = periodictable
 
 # regular units
-lb2Kg = 0.453592 # kg/pound
-inch2Cm = 0.393701 # cm/inch
+lb2kg = 0.453592 # kg/pound
+inch2cm = 2.54 # cm/inch
 
 atm = 101325 # atmospheric pressure kg*m^2/s^2 (pascals)
