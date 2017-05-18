@@ -13,5 +13,6 @@ mevtokg = 9.0958e-31 # conversion of MeV to Kg
 # regular units
 lb2kg = 0.453592 # kg/pound
 inch2cm = 2.54 # cm/inch
+mi2km = 1.609344
 
 atm = 101325 # atmospheric pressure kg*m^2/s^2 (pascals)
