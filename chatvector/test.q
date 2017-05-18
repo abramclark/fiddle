@@ -1,4 +1,4 @@
-load `word
+load `words
 \l util.q
 
 / examples
