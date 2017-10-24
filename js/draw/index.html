@@ -5,9 +5,9 @@
 <script src='draw.js'></script>
 
 <!--
-<link rel="stylesheet" href="codemirror/lib/codemirror.css">
-<script src="codemirror/lib/codemirror.js"></script>
-<script src="codemirror/mode/javascript/javascript.js"></script>
+<link rel="stylesheet" href="../codemirror/lib/codemirror.css">
+<script src="../codemirror/lib/codemirror.js"></script>
+<script src="../codemirror/mode/javascript/javascript.js"></script>
 -->
 <style>
 
@@ -19,6 +19,7 @@ body > * {
 img { z-index: 0 }
 canvas { z-index: 1 }
 
+/*
 .CodeMirror {
     z-index: 2;
     position: absolute;
@@ -26,23 +27,13 @@ canvas { z-index: 1 }
     width: 100%; height: 100%;
 }
 .cell { background-color: red; border:solid 1px black; width:23px; height:23px;}
-
-.cards { left:850px; top: 200px; width:200px; height: 54px;
-    border: 1px solid black; }
-.cards > * {
-    position: absolute;
-    box-sizing: border-box;
-    width: 46px; height:50px; margin: 2px;
-    border: 1px solid black;
-    background-color: white;
-}
+*/
 
 </style>
 </head>
 <body>
 <!-- <img src='sky.jpg'> -->
 <canvas width='1024' height='768'></canvas>
-<div class='cards'></div>
 <script>init()</script>
 </body>
 </html>
