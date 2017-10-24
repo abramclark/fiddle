@@ -3,40 +3,44 @@ var script = document.createElement('script'); script.setAttribute('src','https:
 var set_default = (o, key, val) => o.hasOwnProperty(key) ? o[key] : o[key] = val;
 
 var Tags = ()=>{
-    var o = []; o.by_item = {}; o.by_name = {};
+    var o = []; o.items = {}; o.named = {};
 
-    o.tag_els = (els, tag)=>{ $.map( els.length ? els : [els], el =>{
-        if( !el.id ) el.id = 'a' + Math.floor( Math.random() * 100000000 );
+    o.tag_els = (els, tag) =>{
+        $.map( els.length ? els : [els], el =>{
+            if(! el.id) el.id = 'a' + Math.floor(Math.random() * 100000000);
 
-        var t = o.by_name[tag];
-        if( ! t ){
-            t = o.length;
-            o.push({ name:tag, els:[], id:o.length });
-            o.by_name[tag] = t;
-        }
+            var t = o.named[tag];
+            if(! t){
+                t = o.length;
+                o.push({ name:tag, els:[], id:o.length });
+                o.named[tag] = t;
+            }
 
-        if(o[t].els.indexOf(el.id) == -1)
-            o[t].els.push(el.id);
+            if(o[t].els.indexOf(el.id) == -1)
+                o[t].els.push(el.id);
 
-        var l = set_default(o.by_item, el.id, [])
-        if( ! (t in l) )
-            l.push(t);
-    }) };
+            var l = set_default(o.items, el.id, [])
+            if(! (t in l))
+                l.push(t);
+        })
+    };
 
     o.tags = id =>
-        o.by_item[id].map(i => o[i]);
+        o.items[id].map(i => o[i]);
     o.els = tag =>
-        o[o.by_name[tag]].els.map(id => document.getElementById(id));
+        o[o.named[tag]].els.map(id => document.getElementById(id));
 
     o.by_count = ()=>{
-        var sorted = o.map((t,i) => [t.els.length, i]).sort((a,b) => (a[0] > b[0]) ? ( (a[0] == b[0]) ? 0 : -1 ) : 1);
+        var lengths = o.map((t,i) => [t.els.length, i]),
+            sorted = lengths.sort((a,b) => b[0] - a[0])
+        ;
         return sorted.map(i => o[i[1]]);
     };
 
     o.tag_span = ()=>{
         // return list of minimum set of tags ordered by freq of use that
         // encompasses all items
-        var all_els = Object.keys(o.by_item), els_left = all_els.length,
+        var all_els = Object.keys(o.items), els_left = all_els.length,
             by_els = {}, all_tags = o.by_count(), tag_span = [];
         all_els.forEach(k => by_els[k] = true);
 
@@ -55,8 +59,8 @@ var Tags = ()=>{
     };
 
     o.tag_sum = items =>{
-        var tags = freq_sort( items.map(i => o.by_item[i]).reduce((a,b) => a.concat(b)) );
-        return tags.filter(x => tag_ids.indexOf(x) == -1);
+        var tag_list = items.map(i => o.items[i]).reduce((a,b) => a.concat(b))
+        return freq_sort(tag_list);
     };
 
     o.intersect = tag_ids =>{
