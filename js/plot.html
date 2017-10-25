@@ -5,21 +5,21 @@
 
 var d, aspect;
 
-plot = (f, scale=50, inc=20) =>{
+plot = (f, scale=50, interval=20) =>{
     d.clearRect(-500,500,1000,-1000)
     d.save()
     var range_y = [-500 * aspect, 500 * aspect],
         range_x = [-500, 500]
     d.translate(range_x[0], range_y[0])
-    range(range_y[0], range_y[1], inc).forEach(y =>{
+    range(range_y[0], range_y[1], interval).forEach(y =>{
         d.save()
-        range(range_x[0], range_x[1], inc).forEach(x =>{
+        range(range_x[0], range_x[1], interval).forEach(x =>{
             var v = f(x / scale, y / scale)
             draw_vec(v[0] * scale, v[1] * scale)
-            d.translate(inc, 0)
+            d.translate(interval, 0)
         })
         d.restore()
-        d.translate(0, inc)
+        d.translate(0, interval)
     })
     d.restore()
 }
@@ -63,11 +63,13 @@ mouseup = ev =>{
 
 function resize(canvas){
     d.restore()
-    var pixels = [canvas.width, canvas.height],
-        s = Math.max.apply(null, pixels) / 1000
+    var pixels = [document.body.clientWidth, document.body.clientHeight],
+        scale = pixels[0] / 1000
     aspect = pixels[1] / pixels[0]
+    canvas.width = pixels[0]
+    canvas.height = pixels[1]
     d.translate(pixels[0] / 2, pixels[1] / 2)
-    d.scale(s, -s)
+    d.scale(scale, -scale)
     d.save()
 }
 
@@ -79,7 +81,7 @@ range = (start, end, step=1)=>{
 </script>
 <style>
 
-body { margin: 0; height: 100%; }
+html, body { margin: 0; height: 100%; }
 body > * {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
