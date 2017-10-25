@@ -1,0 +1,5 @@
+cp .ignores/_default .gitignore
+branch=$(git rev-parse --abbrev-ref HEAD)
+if [ -f .ignores/$branch ]; then
+    cat .ignores/$branch >> .gitignore
+fi
