@@ -41,6 +41,7 @@ function init(){
     resize(canvas, 0)
 }
 
+// TODO: add coordinate info?
 var trace = false;
 mousedown = ev =>{
     trace = [ev.clientX, ev.clientY]
@@ -49,12 +50,12 @@ mousedown = ev =>{
 mousemove = ev =>{
     if(!ev.which) mouseup()
     if(!trace) return
-    d.moveTo(trace[0], trace[1])
-    var trace_to = [ev.clientX, ev.clientY]
-    d.lineTo(trace_to[0], trace_to[1])
-    d.stroke()
-    trace = trace_to
-    console.log(trace, trace_to, ev)
+    //d.moveTo(trace[0], trace[1])
+    //var trace_to = [ev.clientX, ev.clientY]
+    //d.lineTo(trace_to[0], trace_to[1])
+    //d.stroke()
+    //trace = trace_to
+    //console.log(trace, trace_to, ev)
 };
 mouseup = ev =>{
     trace = false
