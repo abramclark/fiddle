@@ -1,4 +1,4 @@
-import math
+from math import *
 import periodictable as pt # todo: add melting and boiling temps
 
 Av = 6.022140857e23 # # avogadro constant
@@ -22,6 +22,7 @@ Fahrenheit_to_Celsius = lambda C: (C - 32) * 5/9
 Celsius_to_K = lambda C: C - 273.15
 Fahrenheit_to_K = lambda a: Celsius_to_K(Fahrenheit_to_Celsius(a))
 
+# incidental constants
 atm = 101325 # P # 1 atmosphere # pressure at altitude 0
 
 # J = kg * m**2 / s**2 = joules = energy
