@@ -6,21 +6,28 @@
 var d, aspect;
 
 plot = (f, scale=50, interval=20) =>{
-    d.clearRect(-500,500,1000,-1000)
+    d.clearRect(-500, 500, 1000, -1000)
     d.save()
     var range_y = [-500 * aspect, 500 * aspect],
         range_x = [-500, 500]
     d.translate(range_x[0], range_y[0])
-    range(range_y[0], range_y[1], interval).forEach(y =>{
+    for(var y = range_y[0]; y < range_y[1]; y += interval){
         d.save()
-        range(range_x[0], range_x[1], interval).forEach(x =>{
-            var v = f(x / scale, y / scale)
-            draw_vec(v[0] * scale, v[1] * scale)
-            d.translate(interval, 0)
-        })
+        try {
+            for(var x = range_x[0]; x < range_x[1]; x += interval){
+                var v = f(x / scale, y / scale)
+                draw_vec(v[0] * scale, v[1] * scale)
+                d.translate(interval, 0)
+            }
+        }
+        catch(e) {
+            d.restore()
+            d.restore()
+            throw(e)
+        }
         d.restore()
         d.translate(0, interval)
-    })
+    }
     d.restore()
 }
 
