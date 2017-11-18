@@ -30,7 +30,7 @@ def threes(s):
 
 def finished(s):
     wins = threes(s)
-    return (1,1,1) in wins or (2,2,2) in wins
+    return (1,1,1) in wins or (2,2,2) in wins or s.count(0) <= 1
 
 
 def imap(s, *ixs):
