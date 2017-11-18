@@ -72,4 +72,12 @@ def update(t, i, v):
     return t[:i] + (v,) + t[i+1:]
 
 
-print(len(all_states()))
+alls = all_states()
+print('total states: ' + str(len(alls)))
+print('for player 1: ' + str(
+    len([s for s in alls if s.count(1) == s.count(2)]) + 1
+))
+print('for player 2: ' + str(
+    len([s for s in alls if s.count(1) > s.count(2)])
+))
+
