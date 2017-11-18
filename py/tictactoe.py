@@ -6,7 +6,7 @@ def all_states():
     def walk_states(state, play):
         if 0 not in state: return [state]
         states = [update(state, i, play) for i, v in enumerate(state) if not v]
-        dedup(states, alls)
+        states = dedup(states, alls)
         play2 = 1 if play == 2 else 2
         for s in states:
             walk_states(s, play2)
@@ -51,11 +51,13 @@ def symetries(s):
 
 
 def dedup(states, uniq=set()):
+    new_uniq = set()
     for s in states:
         if finished(s) or any([sym in uniq for sym in symetries(s)]):
             continue
+        new_uniq.add(s)
         uniq.add(s)
-    return uniq
+    return new_uniq
 
 
 def show(s):
