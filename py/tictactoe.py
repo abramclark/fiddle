@@ -70,4 +70,4 @@ def update(t, i, v):
     return t[:i] + (v,) + t[i+1:]
 
 
-len(all_states())
+print(len(all_states()))
