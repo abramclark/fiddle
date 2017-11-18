@@ -17,14 +17,14 @@ def all_states():
 
 def threes(s):
     return [
-        s[0:3],
-        s[3:6],
-        s[6:9],
-        s[0::3],
-        s[1::3],
-        s[2::3],
-        (s[0], s[4], s[8]),
-        (s[2], s[4], s[6]),
+        imap(s, 0, 1, 2),
+        imap(s, 3, 4, 5),
+        imap(s, 6, 7, 8),
+        imap(s, 0, 3, 6),
+        imap(s, 1, 4, 7),
+        imap(s, 2, 5, 8),
+        imap(s, 0, 4, 8),
+        imap(s, 2, 4, 6),
     ]
 
 
