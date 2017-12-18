@@ -14,20 +14,20 @@ kb = R / Av # J / K # boltzman constant in entropy #
 mevtokg = 9.0958e-31 # conversion of MeV to Kg
 
 # conversions from garbage units
+ev_to_j = 1.6021766208e-19
 lb_to_kg = 0.453592 # kg / pound
 inch_to_m = .0254 # m / inch
 feet_to_m = inch_to_m * 12 # m / feet
 mi_to_km = 5280 * feet_to_m / 1e3 # 1000 * m / miles
-Fahrenheit_to_Celsius = lambda C: (C - 32) * 5/9
-Celsius_to_K = lambda C: C - 273.15
-Fahrenheit_to_K = lambda a: Celsius_to_K(Fahrenheit_to_Celsius(a))
+fahrenheit_to_celsius = lambda C: (C - 32) * 5/9
+celsius_to_k = lambda C: C - 273.15
+fahrenheit_to_k = lambda a: celsius_to_k(fahrenheit_to_celsius(a))
 
 # incidental constants
 atm = 101325 # P # 1 atmosphere # pressure at altitude 0
 
-# J = kg * m**2 / s**2 = joules = energy
+# J = kg * m**2 / s**2 = joules
 # P = J / m**3 = pascals = pressure
 # K = Kelvin
-# Fahrenheit2K * Fahrenheit = K
 # acceleration = m / s**2
-# m = meters = unit(x)
+# m = meters
