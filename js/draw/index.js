@@ -1,3 +1,34 @@
+//Point: Int Int
+//MouseMove: point:Point clicked:[Bool]
+//TouchMove: [Point id:Int]
+//ContextUpdate: Sym a
+//Event: MouseMove or TouchMove or ContextUpdate
+
+brushes = {
+    line: ctx =>{
+        ctx.d.lineTo()
+    }
+}
+
+state = {
+    ctx: {
+        cursor_history: [],
+        brush: line,
+        stroke_width: 2,
+        stroke_color: '#000',
+        fill_color: '#000',
+        d: null
+    },
+    history: []
+}
+
+function CtxUpdate(){
+}
+Event.CURSOR = 0
+Event.CONTEXT = 1
+//function CursorEvent(x, y, button
+//var events = []
+
 var trace = false;
 mousedown = ev =>{
     trace = [ev.clientX, ev.clientY]
@@ -33,8 +64,6 @@ function init(){
 
     canvas.on('mousedown', mousedown).on('mousemove', mousemove
         ).on('mouseup', mouseup)
-
-    init_card_stack($('.cards'), mth.range(30))
 }
 
 function resize(canvas){
