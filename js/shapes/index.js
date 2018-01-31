@@ -1,7 +1,5 @@
-var d, pi = Math.PI, palette = [], palette_index = 0,
-    sin = Math.sin, cos = Math.cos, pow = Math.pow,
-    sqrt = function(v){ return pow(v, .5) },
-    square = function(v){ return pow(v, 2) };
+var d, t, pi = Math.PI, palette = [], palette_index = 0,
+    sin = Math.sin, cos = Math.cos, pow = Math.pow
 
 var range = function(start, end) {
     if (typeof(end) == "undefined") { end=start; start=0; }
@@ -18,7 +16,7 @@ var zip = function(list1, list2) {
     return ret;
 };
 
-var partial = function(func){
+var cury = function(func){
     var partial_args = Array.prototype.slice.call(arguments, 1);
     return function(){
         func.apply(null, partial_args.concat(arguments));
@@ -51,10 +49,15 @@ var palette_next = function(){
         d.strokeStyle = palette_next(); };
 
 var init = function(){
-    var canvas = $('canvas').eq(0)
-    d = canvas[0].getContext('2d')
-    $(window).on('resize', function(){ resize(canvas, 0) }) 
-    resize(canvas, 0)
+    canvas = document.getElementsByTagName('canvas')[0]
+    d = canvas.getContext('2d')
+    window.onresize = function(){ resize(canvas) }
+    window.onresize()
+
+    palette = [
+        [5  , 180, 20 , 0.2],
+        [40 , 10 , 240, 0.2]
+    ]
 
     palette = [
         [255, 0  , 0  , .2],
@@ -64,22 +67,25 @@ var init = function(){
         [0  , 255, 255, .2]
     ]
 
-    // spiration()
+    palette = [
+         [100,20 ,40 ,0.1]
+        ,[255,80 ,0  ,0.1]
+        ,[220,220,70 ,0.1]
+        ,[0  ,100,20 ,0.1]
+        ,[0  ,100,220,0.1]
+    ]
+
+    //squares_in_sixes.start()
 }
 
-function resize(canvas, scale_coord){
-    var height = 1024 * (canvas.height() / canvas.width())
-    canvas.attr('height', height)
-    d.translate(512, height / 2)
-    d.scale(.8, .8)
+function resize(canvas){
+    var pixels = [canvas.clientWidth, canvas.clientHeight]
+        ,s = Math.max.apply(null, pixels) / 1000
+    canvas.setAttribute('width', pixels[0])
+    canvas.setAttribute('height', pixels[1])
+    d.translate(pixels[0] / 2, pixels[1] / 2)
+    d.scale(s, s)
     d.save()
-
-    // var pixels = [canvas.width(), canvas.height()]
-    //     ,s = pixels[scale_coord] / 1000
-    // canvas.attr('width', pixels[0]).attr('height', pixels[1])
-    // d.translate(pixels[0] / 2, pixels[1] / 2)
-    // d.scale(s, s)
-    // d.save()
 }
 
 var clear = function(){
@@ -182,7 +188,7 @@ var penta_splay = function(a){
         dir *= -1;
         d.save();
         d.rotate(dir * a);
-        var scale = Math.pow(.25, i);
+        var scale = .25 ** i;
         d.scale(scale, scale);
         splay();
         d.restore();
@@ -250,39 +256,84 @@ var tri_hexa = function(){
     }, 3, 0);
 };
 
+animate = function(draw){
+    animate.animations.push(draw)
+    animate.frame()
+    animate.t0 = + new Date()
+}
+animate.frame = function(){
+    t = (+ new Date() - animate.t0) / 1000
+    for(i in animate.animations) animate.animations[i]()
+    if(animate.animations.length) window.requestAnimationFrame(animate.frame)
+}
+animate.stop = function(draw){
+    if(draw) animate.animations.splice(animate.animations.indexOf(draw), 1)
+    else animate.animations = []
+}
+animate.animations = []
+
 var squares_in_sixes = function(){
-    var a = 0, square_spin = function(){ d.rotate(a); shape(4); };
-    return setInterval(function(){
-        palette_index = palette_index % 1;
-        a += .01;
-        swing(function(){
-            swing(function(){
-                swing(function(){ square_spin() }, 6, 100)
-            }, 6, 100)
-        }, 6, 100)
-    }, 50);
-};
+    a += 1;
+    if(a % 2) return
+    palette_index = palette_index % 1;
+    swing(()=> swing(()=> swing(()=> rotate(()=> shape(4), a / 500), 6, 100), 6, 100), 6, 100)
+}
+var square_spin = ()=> rotate(()=> shape(4), a)
+var squares_in_sixes = ()=>{
+    f += 1
+    if(f % 2) return
+    a = t / 10
+    palette_index = a % palette.length
+    swing_rec(square_spin, .5, 8, 300, 3)
+    swing(()=> swing(()=> swing(square_spin, 6, 100), 6, 100), 6, 100)
+}
+//    var in_sixes = function(){
+//        a += .01
+//        swing(()=> swing(() => swing(square_spin, 6, 100), 6, 100), 6, 100)
+//    }
+//    animate(in_sixes)
+squares_in_sixes.start = function(){
+    window.f = 0
+    animate(squares_in_sixes)
+}
 
 var square_bang = function(){
-    var spar = function(){
-        range(6).map(function(i){
-            rotate(partial(shape, 4), pi/pow(2,i+2));
-            rotate(partial(shape, 4), -pi/pow(2,i+2));
-        })
-    };
-
-    rotate(partial(swing, function(){
-        swing(partial(tri, 8, 1000), 8, 0)
+    rotate(cury(swing, function(){
+        swing(cury(tri, 8, 1000), 8, 0)
     }, pi/8, 0, 2), pi/8);
-    swing(partial(lseg, 1000, 0), 8, 0);
+    swing(cury(lseg, 1000, 0), 8, 0);
 
-    spar();
-    swing(partial(rotate, spar, pi/4), 4, 200);
+    spar4 = ()=> spar(2, 10, 4)
+    spar4()
+    swing(spar4, 4, 200);
 };
 
-var spar = function(p, n, s){
-    range(n).map(function(i){
-        rotate(partial(shape, s), pi/pow(p,i+2));
-        rotate(partial(shape, s), -pi/pow(p,i+2));
+swing_bang = (n, a) =>{
+    rays(n)
+    sparn = ()=> spar(a, 10, n)
+    sparn()
+    swing(sparn, n, 200)
+}
+
+var spar = (p, n, s) =>{
+    range(n).map(i =>{
+        rotate(()=> shape(s), pi / p ** i)
+        rotate(()=> shape(s), -pi / p ** i)
     })
-};
+}
+
+var rays = n =>{
+    rotate(()=> swing(()=> tri(n, 1000), n, 0, 30), pi/n)
+    swing(()=> lseg(1000, 0), n, 0)
+}
+
+var swing_rec = function(draw, scale, n, r, l){
+    if(l == 0) return
+    rotate(()=> swing(()=>{
+        d.save()
+        draw()
+        d.restore()
+        d.scale(scale, scale)
+        swing_rec(draw, scale, n, r, l - 1)
+    }, n, r), 0)
+}

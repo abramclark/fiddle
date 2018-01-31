@@ -129,8 +129,16 @@ var init = function(no_canvas){
          [20,180,255,0.3]
         ,[240,0,50,0.3]
         ,[255,255,0,0.3]
-        ,[255,0,255,0.3]
+        ,[55,230,10,0.3]
         ,[0,255,255,0.3]
+    ]
+
+    palette = [
+         [100,20 ,40 ,0.1]
+        ,[255,80 ,0  ,0.1]
+        ,[220,220,0  ,0.1]
+        ,[0  ,100,20 ,0.1]
+        ,[0  ,100,220,0.1]
     ]
 
     if(!no_canvas){
@@ -291,7 +299,7 @@ var spirate = function(bump, phase){
 }, spiration = function(){
     var n = 0
     setInterval(function(){
-        spirate(sin(n) * 2)
+        spirate(10 + sin(n) * 5, sin(n) * 2)
         n += .01
     }, 200)
 }
@@ -338,7 +346,7 @@ var draw_image = function(im){
 }
 
 var squares_in_sixes = function(){
-var a = 0, square_spin = function(){ d.rotate(a); shape(4) }
+    var a = 0, square_spin = function(){ d.rotate(a); shape(4) }
     var in_sixes = function(){
         a += .01
         palette_index = (a/Math.PI) % palette.length
@@ -497,7 +505,6 @@ var hex_gear = function(){
 
 var boring_tree = function(){
     d.translate(0, -150)
-    $('img').hide()
 
     rec_line = function(x, y, f, f2){
         d.save()
@@ -535,7 +542,7 @@ var boring_tree = function(){
 }
 
 var open_editor = function(){
-    var w = window.open('file:///home/abram/fiddle/shapes.html')
+    var w = window.open('.')
         ,editor
         ,change = function(cm){
             eval(cm.getValue())
