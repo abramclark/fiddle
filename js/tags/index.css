@@ -1,0 +1,38 @@
+body, td {
+    background-color:black;
+    color:white;
+    font-family: sans-serif;
+}
+a { color:skyblue; }
+a:visited { color:lightblue; }
+.hide { display:none !important; }
+
+.tagnav { margin-bottom:2em; }
+.tagnav .tag {
+    cursor: default;
+    display:inline-block;
+    border: 1px solid #ACA;
+    padding: .1em 0.3em;
+    margin: .2em;
+    text-transform: uppercase;
+}
+.tagnav .tag.filter { background-color: #BDB; }
+
+.bucket .item {
+    margin: 0.1em;
+    padding: .1em .3em;
+    display: inline-block;
+    border: solid 1px #AAC;
+    text-decoration: none;
+    width: 20em;
+    height: 1.2em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    line-height: 1.2em;
+    vertical-align: bottom;
+}
+.item img {
+    margin: .1em .3em .1em 0;
+    vertical-align: middle;
+}
