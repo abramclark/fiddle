@@ -5,34 +5,67 @@ body, td {
 }
 a { color:skyblue; }
 a:visited { color:lightblue; }
-.hide { display:none !important; }
 
-.tagnav { margin-bottom:2em; }
+
+.tagnav .selected {
+    background-color: #6A6;
+}
+.tagnav .inverse {
+    background-color: #D66;
+}
+
+
+.tagnav.tags { margin-bottom:2em; }
 .tagnav .tag {
     cursor: default;
     display:inline-block;
     border: 1px solid #ACA;
     padding: .1em 0.3em;
-    margin: .2em;
+    margin: .1em;
     text-transform: uppercase;
 }
-.tagnav .tag.filter { background-color: #BDB; }
+.tagnav .tag.hide { opacity: .6; }
 
-.bucket .item {
+
+.tagnav .item {
     margin: 0.1em;
     padding: .1em .3em;
     display: inline-block;
     border: solid 1px #AAC;
     text-decoration: none;
-    width: 20em;
+    width: 22em;
     height: 1.2em;
-    text-overflow: ellipsis;
-    overflow: hidden;
     white-space: nowrap;
     line-height: 1.2em;
     vertical-align: bottom;
+    position: relative;
+    margin-right: 1em;
 }
-.item img {
+.tagnav .item.hide { display: none; }
+
+.tagnav .item img {
     margin: .1em .3em .1em 0;
-    vertical-align: middle;
+}
+
+.tagnav .item .selector {
+    display: inline-block;
+    position: absolute;
+    width: 1.5em; height: 100%;
+    right: 0; top: 0;
+    border: solid green 2px;
+    box-sizing: border-box;
+    background-color: #121;
+}
+.tagnav .item.selected .selector {
+    background-color: lightgreen;
+}
+
+.tagnav .item a {
+    display: inline-block;
+    width: 19em;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+.tagnav .item.selected a {
+    color: black;
 }
