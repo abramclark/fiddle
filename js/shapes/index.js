@@ -1,5 +1,5 @@
 var d, t, pi = Math.PI, palette = [], palette_index = 0,
-    sin = Math.sin, cos = Math.cos, pow = Math.pow
+    sin = Math.sin, cos = Math.cos, pow = Math.pow, canvas
 
 var range = function(start, end) {
     if (typeof(end) == "undefined") { end=start; start=0; }
@@ -79,8 +79,8 @@ var init = function(){
 }
 
 function resize(canvas){
-    var pixels = [canvas.clientWidth, canvas.clientHeight]
-        ,s = Math.max.apply(null, pixels) / 1000
+    var pixels = [canvas.clientWidth, canvas.clientHeight],
+        s = canvas.clientWidth / 1000
     canvas.setAttribute('width', pixels[0])
     canvas.setAttribute('height', pixels[1])
     d.translate(pixels[0] / 2, pixels[1] / 2)
@@ -202,7 +202,7 @@ var penta_mosaic = function(){
 };
 
 var wild_ride = function(){
-    swing(function(){ swing(function(){ swing(function(){ shape(4) }, 6, 100) }, 4, 200) }, 6, 400);
+    swing(()=> swing(()=> swing(()=> shape(4), 6, 100), 4, 200), 6, 400);
 };
 
 var wobble = function(freq, amp, phase, radius_center){
@@ -336,4 +336,29 @@ var swing_rec = function(draw, scale, n, r, l){
         d.scale(scale, scale)
         swing_rec(draw, scale, n, r, l - 1)
     }, n, r), 0)
+}
+
+var clamp = (v, min, max) => Math.min(Math.max(v, min), max)
+
+var graph = fn =>{
+    var width = 10, height = width * (h / w),
+        w = canvas.width, h = canvas.height,
+        px = width * 2 / w,
+        xo = w / 2, yo = h / 2,
+        img = d.createImageData(w, h)
+
+    for(x = 0; x < w; x++){
+        for(y = 0; y < h; y++){
+            var a = (x - xo) * px, b = (y - yo) * px,
+                v = clamp((fn(a, b) + 10) / 20, 0, 1),
+                c = vector_interp(v, [255, 0, 0], [0, 0, 255]),
+                ix = (y * w + x) * 4
+            img.data[ix  ] = c[0]
+            img.data[ix+1] = c[1]
+            img.data[ix+2] = c[2]
+            img.data[ix+3] = 255
+        }
+    }
+
+    d.putImageData(img, -500, -500)
 }
