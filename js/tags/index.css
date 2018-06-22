@@ -1,6 +1,6 @@
 body, td {
     background-color:black;
-    color:white;
+    color:#EEE;
     font-family: sans-serif;
 }
 a { color:skyblue; }
@@ -15,6 +15,17 @@ a:visited { color:lightblue; }
 }
 
 
+.tagnav.cmd {
+    background-color: inherit; color: inherit;
+    height: 1em;
+    border-bottom: solid skyblue;
+    border-width: 0 0 1px 0;
+    width: 100%;
+    font-size: .8em;
+    margin: 0 .3em .3em .3em;
+}
+
+
 .tagnav.tags { margin-bottom:2em; }
 .tagnav .tag {
     cursor: default;
@@ -24,7 +35,7 @@ a:visited { color:lightblue; }
     margin: .1em;
     text-transform: uppercase;
 }
-.tagnav .tag.hide { opacity: .6; }
+.tagnav .tag.hide { opacity: .75; }
 
 
 .tagnav .item {
