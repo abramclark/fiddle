@@ -27,7 +27,7 @@ fahrenheit_to_k = lambda a: celsius_to_k(fahrenheit_to_celsius(a))
 atm = 101325 # P # 1 atmosphere # pressure at altitude 0
 
 # J = kg * m**2 / s**2 = joules
-# P = J / m**3 = pascals = pressure
+# P = kg /( m * s**2 ) = pascals = pressure
 # K = Kelvin
 # acceleration = m / s**2
 # m = meters
