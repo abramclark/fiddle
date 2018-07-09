@@ -1,82 +1,84 @@
 body, td {
     background-color:black;
     color:#EEE;
-    font-family: sans-serif;
+    font-family:sans-serif;
 }
 a { color:skyblue; }
 a:visited { color:lightblue; }
 
 
 .tagnav .selected {
-    background-color: #6A6;
+    background-color:#6A6;
 }
 .tagnav .inverse {
-    background-color: #D66;
+    background-color:#D66;
 }
 
 
 .tagnav.cmd {
-    background-color: inherit; color: inherit;
-    height: 1em;
-    border-bottom: solid skyblue;
-    border-width: 0 0 1px 0;
-    width: 100%;
-    font-size: .8em;
-    margin: 0 .3em .3em .3em;
+    background-color:inherit; color:inherit;
+    height:1em;
+    /*border-bottom:solid skyblue;*/
+    border-width:0;
+    outline:none;
+    width:100%;
+    font-size:.8em;
+    margin:0 .3em .3em .3em;
 }
 
 
 .tagnav.tags { margin-bottom:2em; }
 .tagnav .tag {
-    cursor: default;
+    cursor:default;
     display:inline-block;
-    border: 1px solid #ACA;
-    padding: .1em 0.3em;
-    margin: .1em;
-    text-transform: uppercase;
+    border:1px solid #ACA;
+    padding:.1em 0.3em;
+    margin:.1em;
+    text-transform:uppercase;
 }
-.tagnav .tag.hide { opacity: .75; }
+.tagnav .tag.hide { opacity:.75; }
 
 
 .tagnav .item {
-    margin: 0.1em;
-    padding: .1em .3em;
-    display: inline-block;
-    border: solid 1px #AAC;
-    text-decoration: none;
-    width: 22em;
-    height: 1.2em;
-    white-space: nowrap;
-    line-height: 1.2em;
-    vertical-align: bottom;
-    position: relative;
-    margin-right: 1em;
+    margin:0.1em;
+    padding:.1em .3em;
+    display:inline-block;
+    border:solid 1px #AAC;
+    text-decoration:none;
+    width:22em;
+    height:1.2em;
+    white-space:nowrap;
+    line-height:1.2em;
+    vertical-align:bottom;
+    position:relative;
+    margin-right:1em;
 }
-.tagnav .item.hide { display: none; }
+.tagnav .item.hide { display:none; }
 
 .tagnav .item img {
-    margin: .1em .3em .1em 0;
+    margin:.1em .3em .1em 0;
 }
 
 .tagnav .item .selector {
-    display: inline-block;
-    position: absolute;
-    width: 1.5em; height: 100%;
-    right: 0; top: 0;
-    border: solid green 2px;
-    box-sizing: border-box;
-    background-color: #121;
+    display:inline-block;
+    position:absolute;
+    width:1.5em; height:100%;
+    right:0; top:0;
+    border:solid green 2px;
+    box-sizing:border-box;
+    background-color:#121;
+    user-select: none;
 }
 .tagnav .item.selected .selector {
-    background-color: lightgreen;
+    background-color:lightgreen;
 }
 
 .tagnav .item a {
-    display: inline-block;
-    width: 19em;
-    text-overflow: ellipsis;
-    overflow: hidden;
+    display:inline-block;
+    width:19em;
+    text-overflow:ellipsis;
+    overflow:hidden;
 }
 .tagnav .item.selected a {
-    color: black;
+    color:black;
 }

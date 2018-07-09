@@ -55,13 +55,13 @@ var Tags = ()=>{ var o = {
 
 var TagsView = (tags_el, items_el)=>{ var o = {
     db: Tags(),
-    tags_el:$(tags_el), items_el:$(items_el),
-    with_tags:new Set(), without_tags:new Set(),
-    active_tag:false, tags_visible:new Set(),
-    selected_items:[], active_item:false,
-    refresh_items_timer:false,
+    tags_el: $(tags_el), items_el: $(items_el),
+    with_tags: new Set(), without_tags: new Set(),
+    active_tag: false, visible_tags: new Set(),
+    visible_items: [], active_item: false, selected_items: [], 
+    refresh_items_timer: false,
 
-    min_tag_size:.8, max_tag_size:1.5,
+    min_tag_size: .8, max_tag_size: 1.5,
 
     item_els: ()=> o.items_el.children(),
     tag_els: ()=> o.tags_el.children(),
@@ -81,7 +81,7 @@ var TagsView = (tags_el, items_el)=>{ var o = {
             if( ev.shiftKey )
                 [pick_set, other_set] = ['without_tags', 'with_tags']
 
-            if( !o.tags_visible.has(tag) ){
+            if( !o.visible_tags.has(tag) ){
                 o[pick_set] = new Set([tag])
                 o[other_set] = new Set()
             }
@@ -92,7 +92,7 @@ var TagsView = (tags_el, items_el)=>{ var o = {
 
             o.refresh()
         }).on('mouseover', ev =>{
-            if( !o.tags_visible.has(tag) ) return
+            if( !o.visible_tags.has(tag) ) return
             o.active_tag = tag
             o.refresh()
         }).on('mouseout', ev =>{
@@ -112,8 +112,13 @@ var TagsView = (tags_el, items_el)=>{ var o = {
         $('<a>').attr('href', item.url).text(item.name).appendTo(el)
 
         $('<div class=selector>').appendTo(el).on('click', ev =>{
-            $(o.item_el(item)).toggleClass('selected',
-                toggle_list_element(o.selected_items, item))
+            if(ev.shiftKey && o.selected_items.length){
+                var ix1 = o.visible_items.indexOf(o.selected_items.slice(-1)[0])
+                var ix2 = o.visible_items.indexOf(item)
+                if( ix1 > ix2 ) [ix1, ix2] = [ix2, ix1]
+                for(var i = ix1; i <= ix2; i++)
+                    o.item_selection(o.visible_items[i], true)
+            } else o.item_selection(item) 
         })
 
         return el.on('mouseover', ev =>{
@@ -126,31 +131,41 @@ var TagsView = (tags_el, items_el)=>{ var o = {
         })
     },
 
+    // set, unset, or toggle (selected = undefined) item selection 
+    item_selection: (item, selected) =>{
+        if(selected) o.selected_items.push(item)
+        else{
+            var ix = o.selected_items.indexOf(item)
+            if(selected == undefined) selected = ix < 0
+            if(selected) o.selected_items.push(item)
+            else o.selected_items.splice(ix, 1)
+        }
+        $(o.item_el(item)).toggleClass('selected', selected)
+    },
+
     refresh: ()=>{
         o.tag_els().removeClass('selected').removeClass('inverse')
         o.with_tags.forEach(t => o.tag_el(t).classList.add('selected'))
         o.without_tags.forEach(t => o.tag_el(t).classList.add('inverse'))
 
-        var items = []
-        if( o.active_item ) o.tags_visible = new Set(o.active_item.tags)
+        if( o.active_item ) o.visible_tags = new Set(o.active_item.tags)
         else{
             var tags = new Set(o.with_tags)
             if( o.active_tag ) tags.add(o.active_tag)
-            items = o.db.query_items(tags, o.without_tags)
-            o.tags_visible = new Set(o.db.tags_from_items(items))
+            o.visible_items = o.db.query_items(tags, o.without_tags)
+            o.visible_tags = new Set(o.db.tags_from_items(o.visible_items))
+
+            if(o.refresh_items_timer) clearTimeout(o.refresh_items_timer)
+            o.refresh_items_timer = setTimeout(()=>{
+                o.item_els().toggleClass('hide', o.visible_items.length != 0)
+                o.visible_items.forEach(item =>
+                    o.item_el(item).classList.remove('hide'))
+            }, 50)
         }
 
-        o.without_tags.forEach(t => o.tags_visible.add(t))
-        o.tag_els().toggleClass('hide', o.tags_visible.size > 0)
-        o.tags_visible.forEach(t => o.tag_el(t).classList.remove('hide'))
-
-        if(o.refresh_items_timer) clearTimeout(o.refresh_items_timer)
-        o.refresh_items_timer = setTimeout(()=>{
-            if( !o.active_item ){
-                o.item_els().toggleClass('hide', items.length != 0)
-                items.forEach(item => o.item_el(item).classList.remove('hide'))
-            }
-        }, 50)
+        o.without_tags.forEach(t => o.visible_tags.add(t))
+        o.tag_els().toggleClass('hide', o.visible_tags.size > 0)
+        o.visible_tags.forEach(t => o.tag_el(t).classList.remove('hide'))
     },
 
     cmd_el:$('#cmd')[0],
@@ -158,6 +173,16 @@ var TagsView = (tags_el, items_el)=>{ var o = {
         var cc = ev.which, c = String.fromCharCode(cc)
         if((cc >= 32) && (cc <= 126) || (cc == 8) || (cc == 46))
             o.cmd_el.focus()
+        if(cc == 27){
+            if(o.selected_items.length){
+                o.selected_items.slice().map(item =>
+                    o.item_selection(item, false))
+                return
+            } else if(o.cmd_el.value){
+                o.cmd_el.value = ''
+                return
+            }
+        }
     },
 
     add_items: items =>{
@@ -187,14 +212,6 @@ var freq_sort = xs =>{
 }
 
 var toggle_element = (s, x)=>{ if( !s.delete(x) ) return s.add(x) }
-var toggle_list_element = (l, x)=>{
-    var ix = l.indexOf(x)
-    if(ix == -1){
-        l.push(x)
-        return l
-    }
-    l.splice(ix, 1)
-}
 
 
 load = ()=>{
