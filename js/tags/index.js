@@ -50,6 +50,13 @@ var Tags = ()=>{ var o = {
         if( !items.length ) return []
         return freq_sort(items.map(x => x.tags).reduce((a,b)=> a.concat(b)))
     },
+
+    serialize_item: item =>{
+        var serialized = Object.assign({}, item)
+        serialized.tags = item.tags.map(t => t.name)
+        return serialized
+    },
+    serialize: ()=> o.items.map(o.serialize_item),
 }; return o }
 
 
@@ -87,19 +94,24 @@ var TagsView = (tags_el, items_el)=>{ var o = {
                 o[other_set].delete(tag)
             }
 
+            o.set_active_tag(tag)
             o.refresh()
         }).on('mouseover', ev =>{
-            if( !o.tags_visible.has(tag) ) return
-            o.active_tag = tag
+            o.active_tag = o.set_active_tag(tag)
             o.refresh()
         }).on('mouseout', ev =>{
-            if( !o.active_tag ) return
-            o.active_tag = false
+            o.set_active_tag(false)
             o.refresh()
         }).on('mousedown', ()=> false)
 
         el[0].id = 't' + tag.id
         return el
+    },
+    set_active_tag: tag =>{
+        if( tag == o.active_tag) return
+        // don't set active tag filter when it would remove all items
+        o.active_tag = (!o.tags_visible.has(tag) || o.without_tags.has(tag) ?
+            false : tag)
     },
 
     refresh: ()=>{
@@ -160,12 +172,21 @@ var TagsView = (tags_el, items_el)=>{ var o = {
         o.tags_el.append(o.db.tags.map(t =>
             o.render_tag(t, o.db.tags[0].items.length)))
         window.onkeydown = o.handle_keys
-    }
+    },
+
+    save_db: ()=>{
+        $.ajax('/clobber', {
+            type:'POST',
+            data:JSON.stringify(tv.db.serialize()),
+            success:r=> console.log('HI', r),
+            contentType:'application/json'}
+        )
+    },
 }; return o }
 
 
 var set_default = (o, key, val)=> o.hasOwnProperty(key) ? o[key] : o[key] = val
-        
+
 var interp = (start, end, p)=> (end - start) * p + start
 
 var freq_sort = xs =>{
@@ -187,5 +208,5 @@ var toggle_element = (s, x)=>{
 
 load = ()=>{
     window.tv = TagsView('#tags', '#items')
-    $.getJSON('index.json', bookmarks => window.tv.add_items(bookmarks))
+    $.getJSON('data.json', bookmarks => window.tv.add_items(bookmarks))
 }

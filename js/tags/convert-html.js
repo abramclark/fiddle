@@ -4,7 +4,7 @@ const fs = require('fs')
 
 html_to_tagged = (link, tags)=>{ return {
     url: link.attr('href'),
-    tags: tags,
+    tags: tags.map(s => s.toLowerCase()),
     name: link.text(),
     icon: link.attr('icon'),
     time_created: link.attr('add_date')

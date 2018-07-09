@@ -19,7 +19,7 @@ a:visited { color:lightblue; }
 .tagnav .tag {
     cursor: default;
     display:inline-block;
-    border: 1px solid #ACA;
+    border: 1px solid #114;
     padding: .1em 0.3em;
     margin: .1em;
     text-transform: uppercase;
@@ -31,7 +31,7 @@ a:visited { color:lightblue; }
     margin: 0.1em;
     padding: .1em .3em;
     display: inline-block;
-    border: solid 1px #AAC;
+    border: solid 1px #114;
     text-decoration: none;
     width: 22em;
     height: 1.2em;
