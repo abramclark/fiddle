@@ -35,7 +35,7 @@ let rules = {
       (Math.random() < .3333 ? a : (Math.random() > .5 ? b : c)) :
       (a + b + c) / 3
     ) :
-    (Math.sin(i/318)/2 + .5 + Math.sin(t)/2 + .5)
+    (Math.sin(i / 318) / 2 + .5 + Math.sin(t) / 2 + .5)
 },
 
 rule = rules.triangles, width, cells, t = 0, neighbors = i =>
@@ -48,7 +48,7 @@ cellulate = ()=>{
 draw, tiles, tileSize = 100, tileMargin = 0, tileOffset = 0, go = 1,
 render = ()=>{
   tiles.forEach( (x, i) => draw.putImageData(
-    x.getImageData(0,0,width,tileSize), 0, i * tileSize - tileOffset ) )
+    x.getImageData(0, 0, width, tileSize), 0, i * tileSize - tileOffset ) )
   tileOffset += 1
   if(go) setTimeout(()=> requestAnimationFrame(render), 25)
   if(tileOffset > tileSize - tileMargin){
@@ -141,8 +141,6 @@ range = (start, end, step=1) =>{
   for(var l = []; start < end; start += step) l.push(start)
   return l
 },
-
-rgb = (r,g,b) => 'rgb(' + [r,g,b].slice(0,3).map(v => v*255 >> 0).join(',') + ')',
 
 buff = (width, height) =>{
   let canvas = document.createElement('canvas')
