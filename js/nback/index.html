@@ -1,0 +1,35 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src='index.js'></script>
+<style>
+body, body * {
+    display:inline-block; vertical-align:top; box-sizing:border-box;
+    margin:0; background-color:black; color:#EEE;
+    font-size:2vmin; font-family:sans-serif; text-align:center;
+}
+#board { width:80vmin; height:80vmin; border:1px solid #333; }
+#board * {
+    width:33.33%; height:33.33%;
+    border:1px solid #222;
+    font-size:26vmin;
+}
+#top { width:100%; height:5vmin; padding:1vmin; }
+#ctrl { width:19vmin; }
+button { width:100%; height:20vmin; border:1px solid #222; }
+button span { font-size:1.5vmin; }
+button.yes { background-color:#009; }
+button.no { background-color:#900; }
+</style>
+</head>
+<body>
+<div id='top'>2 back</div>
+<div id='board'></div>
+<div id='ctrl'>
+  <button id='x'>position<br><span>2/4</span></button>
+  <button id='symbol'>symbol<br><span>2/6</span></button>
+  <button id='color'>color<br><span>1/2</span></button>
+  <button id='sound'>sound<br><span>2/4</span></button>
+</div>
+</body>
+</html>
