@@ -1,16 +1,16 @@
 var d, t, pi = Math.PI, palette = [], palette_index = 0,
     sin = Math.sin, cos = Math.cos, pow = Math.pow, canvas
 
-var range = function(start, end) {
-    if (typeof(end) == "undefined") { end=start; start=0; }
+var range = (start, end)=>{
+    if(typeof(end) == "undefined") { end=start; start=0; }
     var l = [];
     for (var i = start; i < end; i++){
-        l.push(i);
+        l.push(i)
     }
-    return l;
-};
+    return l
+}
 
-var zip = function(list1, list2) {
+var zip = (list1, list2)=>{
     var ret = [];
     for(var i = 0; i < list1.length; i++) ret.push([list1[i], list2[i]]);
     return ret;
@@ -18,40 +18,34 @@ var zip = function(list1, list2) {
 
 var cury = function(func){
     var partial_args = Array.prototype.slice.call(arguments, 1);
-    return function(){
-        func.apply(null, partial_args.concat(arguments));
-    }
-};
+    return ()=> func.apply(null, partial_args.concat(arguments))
+}
 
-var interp = function(p, start, end){ return (end - start) * p + start };
-var vector_interp = function(p, start, end){
-    return zip(start, end).map(function(v){ return interp(p, v[0], v[1]) });
+var interp = (p, start, end)=> (end - start) * p + start
+var vector_interp = (p, start, end)=>{
+    return zip(start, end).map(v => interp(p, v[0], v[1]))
 };
-var css_color = function(l){
-    return 'rgba(' + 
-        l.slice(0,3).map(function(v){ return v >> 0 }).concat(l[3]).join(',')
-        + ')';
-};
-var next_index = function(list, i){ return (i + 1) % list.length };
-var get_color = function(i){
-    var index = i >> 0, fraction = i % 1;
+var css_color = l =>('rgba(' +
+    l.slice(0,3).forEach(v => v >> 0).concat(l[3]).join(',') + ')')
+
+var next_index = (list, i) => (i + 1) % list.length
+var get_color = i =>{
+    var index = i >> 0, fraction = i % 1
     return vector_interp(fraction, palette[index],
-        palette[next_index(palette, index)]);
-};
-var palette_next = function(){
+        palette[next_index(palette, index)])
+}
+var palette_next = ()=>{
         var color = get_color(palette_index);
         palette_index = next_index(palette, palette_index);
         return css_color(color);
-    },
-    palette_fill = function(){
-        d.fillStyle = palette_next(); },
-    palette_stroke = function(){
-        d.strokeStyle = palette_next(); };
+    }
+var palette_fill = ()=>{ d.fillStyle = palette_next() }
+var palette_stroke = ()=>{ d.strokeStyle = palette_next() }
 
-var init = function(){
+var init = ()=>{
     canvas = document.getElementsByTagName('canvas')[0]
     d = canvas.getContext('2d')
-    window.onresize = function(){ resize(canvas) }
+    window.onresize = ()=> resize(canvas)
     window.onresize()
 
     palette = [
@@ -78,7 +72,7 @@ var init = function(){
     //squares_in_sixes.start()
 }
 
-function resize(canvas){
+var resize = canvas =>{
     var pixels = [canvas.clientWidth, canvas.clientHeight],
         s = canvas.clientWidth / 1000
     canvas.setAttribute('width', pixels[0])
@@ -88,75 +82,92 @@ function resize(canvas){
     d.save()
 }
 
-var clear = function(){
-    d.restore(); d.save();
-    d.clearRect(-1280,-720,2560,1440);
+var clear = ()=>{
+    d.restore(); d.save()
+    d.clearRect(-500,-500,1000,1000)
+}
+
+var gfx = draw =>{ return function(){
+    d.save()
+    draw.apply(null, arguments)
+    d.restore()
+} }
+
+var rotate = gfx((draw, a)=>{ d.rotate(a); draw() })
+
+var trans = gfx((draw, x, y)=>{ d.translate(x, y); draw() })
+
+var shape = n =>{
+    var seg = a =>{
+        d.rotate(pi*2/a)
+        d.lineTo(100,0)
+    }
+
+    d.save()
+    d.beginPath()
+    d.moveTo(100,0)
+    range(n-1).forEach(()=> seg(n))
+    d.closePath()
+    palette_fill()
+    d.stroke()
+    d.fill()
+    d.restore()
+}
+
+var swing = (draw, slice, r, steps)=>{
+    if(!steps) steps = slice
+    d.save()
+    range(steps).forEach(()=>{
+        trans(draw, r, 0)
+        d.rotate(2*pi/slice)
+    })
+    d.restore()
+}
+
+var lsegr = (l, a)=>{
+    d.beginPath()
+    d.moveTo(0, 0)
+    d.rotate(a)
+    d.translate(l, 0)
+    d.lineTo(0, 0)
+    // palette_stroke()
+    d.stroke()
+}, lseg = gfx(lsegr)
+
+var tri = (slice, r)=>{
+    var a = 2*pi/slice
+    d.save()
+    d.beginPath()
+    d.moveTo(0,0)
+    d.rotate(-a/2)
+    d.lineTo(r, 0)
+    d.rotate(a)
+    d.lineTo(r, 0)
+    d.closePath()
+    palette_fill()
+    d.fill()
+    d.restore()
 };
 
-var gfx = function(draw){ return function(){
-    d.save();
-    draw.apply(null, arguments);
-    d.restore();
-} };
+var vline = w =>{
+  d.beginPath()
+  d.moveTo(0, -w/2)
+  d.lineTo(0, w/2)
+  d.stroke()
+}
 
-var rotate = gfx(function(draw, a){ d.rotate(a); draw() });
+var slide = (draw, n, width)=>{
+  d.save()
+  d.translate(-width / 2, 0)
+  var ow = width / n
+  range(n).forEach(()=>{
+    draw()
+    d.translate(ow, 0)
+  })
+  d.restore()
+}
 
-var shape = function(n){
-    var seg = function(a){
-        d.rotate(pi*2/a);
-        d.lineTo(100,0);
-    };
-
-    d.save();
-    d.beginPath();
-    d.moveTo(100,0);
-    range(n-1).map(function(){seg(n)});
-    d.closePath();
-    palette_fill();
-    d.stroke();
-    d.fill();
-    d.restore();
-};
-
-var swing = function(draw, slice, r, steps){
-    if(!steps) steps = slice;
-    d.save();
-    range(steps).map(function(){
-        d.save();
-        d.translate(r, 0);
-        draw();
-        d.restore();
-        d.rotate(2*pi/slice);
-    });
-    d.restore();
-};
-
-var lsegr = function(l, a){
-    d.beginPath();
-    d.moveTo(0,0);
-    d.rotate(a);
-    d.translate(l,0);
-    d.lineTo(0,0);
-    // palette_stroke();
-    d.stroke();
-}, lseg = gfx(lsegr);
-
-var tri = function(slice, r){
-    var a = 2*pi/slice;
-    d.save();
-    d.beginPath();
-    d.moveTo(0,0);
-    d.rotate(-a/2);
-    d.lineTo(r, 0);
-    d.rotate(a);
-    d.lineTo(r, 0);
-    d.closePath();
-    palette_fill();
-    d.fill();
-    d.restore();
-};
-
-var jewel = function(){
+var jewel = ()=>{
     var jewel_1 = function(){
         swing(function(){ shape(6) }, 9, 189);
         swing(function(){ shape(6) }, 9, 195);
@@ -167,43 +178,42 @@ var jewel = function(){
         swing(function(){ shape(4) }, 6, 79);
     };
 
-    range(22).map(function(){ swing(function(){ tri(9, 800) }, 18, 0) });
+    range(22).forEach(function(){ swing(function(){ tri(9, 800) }, 18, 0) });
 
     jewel_1();
 
     swing(function(){
         d.save(); d.scale(.2,.2); d.rotate(pi/9); jewel_1(); d.restore();
     }, 9, 354);
-};
+}
 
-var penta_splay = function(a){
+var penta_splay = a =>{
     var splay = function(){
-        swing(function(){ shape(5) }, 18, 202);
-        swing(function(){ shape(5) }, 18, -402);
-    };
+        swing(function(){ shape(5) }, 18, 202)
+        swing(function(){ shape(5) }, 18, -402)
+    }
 
-    d.strokeStyle = 'rgb(255,255,255)';
-    var dir = 1;
-    range(5).map(function(i){
-        dir *= -1;
-        d.save();
-        d.rotate(dir * a);
-        var scale = .25 ** i;
-        d.scale(scale, scale);
-        splay();
-        d.restore();
-    });
+    d.strokeStyle = 'rgb(255,255,255)'
+    var dir = 1
+    range(5).forEach(i =>{
+        dir *= -1
+        d.save()
+        d.rotate(dir * a)
+        var scale = .25 ** i
+        d.scale(scale, scale)
+        splay()
+        d.restore()
+    })
 
-    d.restore(); d.save();
+    d.restore()
+    d.save()
 };
 
-var penta_mosaic = function(){
-    swing(function(){ swing(function(){ swing(function(){ swing(function(){ swing(function(){ shape(5) }, 5, 100) }, 5, 100) }, 5, 100) }, 5, 100) }, 5, 100);
-};
+var penta_mosaic = ()=> swing(()=> swing(()=> swing(()=> swing(()=> swing(()=>
+    shape(5), 5, 100), 5, 100), 5, 100), 5, 100), 5, 100)
 
-var wild_ride = function(){
-    swing(()=> swing(()=> swing(()=> shape(4), 6, 100), 4, 200), 6, 400);
-};
+var wild_ride = ()=> swing(()=> swing(()=> swing(()=>
+    shape(4), 6, 100), 4, 200), 6, 400)
 
 var wobble = function(freq, amp, phase, radius_center){
     var n = 0, r = function(){
@@ -224,7 +234,7 @@ var wobble = function(freq, amp, phase, radius_center){
 };
 
 var spirate = function(bump, twist){
-    range(80).reverse().map(function(i){
+    range(80).reverse().forEach(function(i){
         wobble(7, sin(i * pi/50) * bump, twist * i * pi/50, 10 + i * 5)
     })
 }
@@ -272,35 +282,32 @@ animate.stop = function(draw){
 }
 animate.animations = []
 
-var squares_in_sixes = function(){
-    a += 1;
-    if(a % 2) return
-    palette_index = palette_index % 1;
-    swing(()=> swing(()=> swing(()=> rotate(()=> shape(4), a / 500), 6, 100), 6, 100), 6, 100)
-}
-var square_spin = ()=> rotate(()=> shape(4), a)
-var squares_in_sixes = ()=>{
-    f += 1
-    if(f % 2) return
-    a = t / 10
-    palette_index = a % palette.length
-    swing_rec(square_spin, .5, 8, 300, 3)
-    swing(()=> swing(()=> swing(square_spin, 6, 100), 6, 100), 6, 100)
-}
-//    var in_sixes = function(){
-//        a += .01
-//        swing(()=> swing(() => swing(square_spin, 6, 100), 6, 100), 6, 100)
-//    }
-//    animate(in_sixes)
-squares_in_sixes.start = function(){
-    window.f = 0
-    animate(squares_in_sixes)
-}
+//var squares_in_sixes = function(){
+//    a += 1;
+//    if(a % 2) return
+//    palette_index = palette_index % 1;
+//    swing(()=> swing(()=> swing(()=> rotate(()=> shape(4), a / 500), 6, 100), 6, 100), 6, 100)
+//}
+var Squares = ()=>{ var o = {
+    a: 0,
+    spin: ()=> rotate(()=> shape(4), o.a),
 
-var square_bang = function(){
-    rotate(cury(swing, function(){
-        swing(cury(tri, 8, 1000), 8, 0)
-    }, pi/8, 0, 2), pi/8);
+    f: 0, in_sixes: ()=>{
+        o.f += 1
+        if(o.f % 2) return
+
+        o.a = t / 10
+        palette_index = o.a % palette.length
+        swing_rec(o.spin, .5, 8, 300, 3)
+        swing(()=> swing(()=> swing(o.spin, 6, 100), 6, 100), 6, 100)
+    },
+
+    start: ()=> animate(o.in_sixes)
+}; return o }
+squares = Squares()
+
+var square_bang = ()=>{
+    rotate(cury(swing, ()=> swing(cury(tri, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
     swing(cury(lseg, 1000, 0), 8, 0);
 
     spar4 = ()=> spar(2, 10, 4)
@@ -316,7 +323,7 @@ swing_bang = (n, a) =>{
 }
 
 var spar = (p, n, s) =>{
-    range(n).map(i =>{
+    range(n).forEach(i =>{
         rotate(()=> shape(s), pi / p ** i)
         rotate(()=> shape(s), -pi / p ** i)
     })
@@ -351,7 +358,7 @@ var graph = fn =>{
         for(y = 0; y < h; y++){
             var a = (x - xo) * px, b = (y - yo) * px,
                 v = clamp((fn(a, b) + 10) / 20, 0, 1),
-                c = vector_interp(v, [255, 0, 0], [0, 0, 255]),
+                c = vector_interp(v, [0, 255, 0], [0, 0, 255]),
                 ix = (y * w + x) * 4
             img.data[ix  ] = c[0]
             img.data[ix+1] = c[1]
@@ -360,5 +367,5 @@ var graph = fn =>{
         }
     }
 
-    d.putImageData(img, -500, -500)
+    d.putImageData(img, 0, 0)
 }
