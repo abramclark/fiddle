@@ -58,7 +58,7 @@ var cellulate = ()=>{
 }
 
 var draw, tiles, tile_size = 100, tile_margin = 0, tile_offset = 0, go = 1
-var speed = 1.5, render = ()=>{
+var speed = 1, render = ()=>{
     tiles.forEach((x, i)=> draw.putImageData(x.getImageData(
         0, 0, width, tile_size), 0, i * tile_size - tile_offset))
     tile_offset += speed
@@ -137,7 +137,7 @@ var toggles, init_id, initUI = ()=>{
     init_id = $('#sel_reset').value = params.get('init_id') || 'tri'
     let rule_code = params.get('rule')
     if(rule_code) $('#rule').value = rule_set(0, rule_code)
-    else rule_set(params.get('rule_id'))
+    else rule_set(params.get('rule_id') || rule_id)
 }, loc_update = ()=>{
     params.set('init_id', $('#sel_reset').value)
     rule_id = $('#rules').value
