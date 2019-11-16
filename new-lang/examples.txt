@@ -1,0 +1,51 @@
+[(len(l), s) for l, s in ((list(slice(((t for t in ts if s in t.input_primary), 4), s))) for s in words) if len(l) < 4]
+(l=len(for ts if s in it.input_primary) s) for s words if l < 4
+(for
+    '(
+        l=(len (for 0 it ts in(s it.input_primary)))
+        s
+    )
+    's
+    words
+    '(< l 4)
+)
+
+# python
+c = 2 + 3j
+def mandel(z): z**2 + c
+# python-like
+c = 2 + 3j
+mandel z = z^2 + c
+mandel=(fn 'z '+(^(z 2) c))
+
+## search users
+# python
+from datetime import datetime
+from time import time
+from itertools import islice
+def partition(items, conds, count): return [
+    list(islice((i for i in items if cond(i)), count))
+    for cond in conds
+]
+ct = time.time()
+def year_old(u): return u.created < ct - datetime.year
+users_sel = sum(users, [
+    lambda u: not u.email,
+    year_old,
+    lambda u: not year_old(u)
+], [])
+
+# python-like
+import time
+ct = time.now()
+year_old u = u.created < (ct - time.year)
+users_sel = sum(
+    partition(users, (not .email, year_old, not year_old))[(:100) * 3]
+)
+
+time=(import 'time)
+ct=(now)
+yeard_old=(fn 'u '<(u.created -(ct .(time 'year))))
+users_sel=(sum (partition users (
+    (fn 'u '(not (. u, 'email))), year_old, not year_old
+)))
