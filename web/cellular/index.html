@@ -7,8 +7,8 @@ Object.getOwnPropertyNames(Math).forEach(k => window[k] = Math[k])
 var rules = {
     identity: (a, b, c) => b,
     drips: (a, b, c) => ((a + b + c) / 2.99) % 1,
-    mountains: (a, b, c) => (1.001 * max( a + b, b + c ) / 2) % 1,
-    houses: (a, b, c) => (min( a + b, b + c ) / 1.8) % 1,
+    mountains: (a, b, c) => (1.001 * max(a + b, b + c) / 2) % 1,
+    houses: (a, b, c) => (min(a + b, b + c) / 1.8) % 1,
     // these multiline fns have correct indentation for rule.toString()
     stacks: (aa, bb, cc) =>{
     let a = aa*.9, b = bb, c = cc*.9, avg = (a + b + c) / 2.8
@@ -23,7 +23,7 @@ var rules = {
     triangle_waves: (a, b, c) =>{
     let avg = (a + b + c) / 3
     return [a-b, a-c, b-c].findIndex(x => abs(x) > .2) == -1 ?
-        avg + .02 + abs(sin(t) + 1) / 30 :
+        avg + exp(avg) / (300 + (sin(t/200) + 1)*400) :
         min(a + b, a + c, b + c) * .49
 },
     pi_grey: (a, b, c) =>{
@@ -54,11 +54,11 @@ var rule = rules.triangles, width, cells, t = 0, neighbors = i =>
     [ cells[i > 0 ? i - 1 : width - 1], cells[i], cells[(i + 1) % width], i ]
 var cellulate = ()=>{
     t += 1
-    return cells.map( (x, i) => rule(...neighbors(i)) )
+    return cells.map((x, i) => rule(...neighbors(i)))
 }
 
 var draw, tiles, tile_size = 100, tile_margin = 0, tile_offset = 0, go = 1
-var speed = 1.5, render = ()=>{
+var speed = 1, render = ()=>{
     tiles.forEach((x, i)=> draw.putImageData(x.getImageData(
         0, 0, width, tile_size), 0, i * tile_size - tile_offset))
     tile_offset += speed
@@ -92,7 +92,7 @@ var rule_id = 'triangles', rule_set = (k, src)=>{
         try {
             f = eval(src)
             f(0, 1, 2, 0)
-        } catch( ex ){
+        } catch(ex){
             $('#error').innerText = ex.message
         }
         if(f && f != rule){
@@ -137,7 +137,7 @@ var toggles, init_id, initUI = ()=>{
     init_id = $('#sel_reset').value = params.get('init_id') || 'tri'
     let rule_code = params.get('rule')
     if(rule_code) $('#rule').value = rule_set(0, rule_code)
-    else rule_set(params.get('rule_id'))
+    else rule_set(params.get('rule_id') || rule_id)
 }, loc_update = ()=>{
     params.set('init_id', $('#sel_reset').value)
     rule_id = $('#rules').value
@@ -169,8 +169,9 @@ var height, init = ()=>{
     
     initUI()
     cell_reset(init_id)
-    tiles = range( ceil(height / (tile_size - tile_margin)) + 1
-        ).map( x => buff(width, tile_size) )
+    tiles = range(
+        ceil(height / (tile_size - tile_margin)) + 1
+    ).map(x => buff(width, tile_size))
     tiles.forEach(render_tile)
     render()
 }
@@ -178,7 +179,7 @@ var height, init = ()=>{
 var color = x => abs((x+1) % 2 - 1) * 255
 var cells2img = cells =>{
     let img = new ImageData(width, 1)
-    cells.forEach( (x, i) =>{
+    cells.forEach((x, i) =>{
         [0,1,2].forEach(o => img.data[i*4+o] = color(x) )
         img.data[i*4+3] = 255
     })
@@ -186,7 +187,7 @@ var cells2img = cells =>{
 }
 
 var range = (start, end, step=1) =>{
-    if( end === undefined ){ end = start; start = 0 }
+    if(end === undefined){ end = start; start = 0 }
     for(var l = []; start < end; start += step) l.push(start)
     return l
 }

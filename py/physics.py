@@ -20,7 +20,7 @@ inch_to_m = .0254 # m / inch
 feet_to_m = inch_to_m * 12 # m / feet
 mi_to_km = 5280 * feet_to_m / 1e3 # 1000 * m / miles
 fahrenheit_to_celsius = lambda C: (C - 32) * 5/9
-celsius_to_k = lambda C: C - 273.15
+celsius_to_k = lambda C: C + 273.15
 fahrenheit_to_k = lambda a: celsius_to_k(fahrenheit_to_celsius(a))
 
 # incidental constants
