@@ -297,5 +297,5 @@ var RateLimited = (fn, min_wait_ms)=>{
 
 load = ()=>{
     window.tv = TagsView('#tags', '#items')
-    $.getJSON('data.json', bookmarks => window.tv.add_items(bookmarks))
+    $.getJSON('index.json', bookmarks => window.tv.add_items(bookmarks))
 }

@@ -1,3 +1,5 @@
+#!/usr/local/bin/node
+
 var express = require('express'),
     body_parser = require('body-parser'),
     fs = require('fs')
