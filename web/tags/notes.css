@@ -1,0 +1,6 @@
+* { font-family: "Lucida Console", Monaco, monospace; background-color:black; color:#EEE; }
+
+a { color:skyblue; }
+a:visited { color:lightblue; }
+
+#input { height:auto; width:90ch; font-size:inherit; }
