@@ -1,0 +1,10 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 297 210' height='210mm' width='297mm'>
+<rect width='297' height='210' x='0' y='0' stroke='#000' stroke-width='1' fill='none'/>
+
+<image href='card1a-inkscape.svg' width='145' height='72.5' x='0' y='0'/>
+<image href='card1a-inkscape.svg' width='145' height='72.5' x='148' y='0'/>
+
+<image href='card1a-inkscape.svg' width='145' height='72.5' x='0' y='80'/>
+<image href='card1a-inkscape.svg' width='145' height='72.5' x='148' y='80'/>
+
+</svg>
