@@ -26,7 +26,7 @@ var vector_interp = (p, start, end)=>{
     return zip(start, end).map(v => interp(p, v[0], v[1]))
 };
 var css_color = l =>('rgba(' +
-    l.slice(0,3).forEach(v => v >> 0).concat(l[3]).join(',') + ')')
+    l.slice(0,3).map(v => v >> 0).concat(l[3]).join(',') + ')')
 
 var next_index = (list, i) => (i + 1) % list.length
 var get_color = i =>{
@@ -68,8 +68,6 @@ var init = ()=>{
         ,[0  ,100,20 ,0.1]
         ,[0  ,100,220,0.1]
     ]
-
-    //squares_in_sixes.start()
 }
 
 var resize = canvas =>{
@@ -94,8 +92,8 @@ var gfx = draw =>{ return function(){
 } }
 
 var rotate = gfx((draw, a)=>{ d.rotate(a); draw() })
-
 var trans = gfx((draw, x, y)=>{ d.translate(x, y); draw() })
+var scale = gfx((draw, s)=>{ d.scale(s, s); draw() })
 
 var shape = n =>{
     var seg = a =>{
@@ -167,6 +165,61 @@ var slide = (draw, n, width)=>{
   d.restore()
 }
 
+animate = function(draw){
+    animate.animations.push(draw)
+    animate.frame()
+    animate.t0 = + new Date()
+}
+animate.frame = function(){
+    t = (+ new Date() - animate.t0) / 1000
+    for(i in animate.animations) animate.animations[i]()
+    if(animate.animations.length) window.requestAnimationFrame(animate.frame)
+}
+animate.stop = function(draw){
+    if(draw) animate.animations.splice(animate.animations.indexOf(draw), 1)
+    else animate.animations = []
+}
+animate.animations = []
+
+var swing_rec = function(draw, scale, n, r, l){
+    if(l == 0) return
+    rotate(()=> swing(()=>{
+        d.save()
+        draw()
+        d.restore()
+        d.scale(scale, scale)
+        swing_rec(draw, scale, n, r, l - 1)
+    }, n, r), 0)
+}
+
+var clamp = (v, min, max) => Math.min(Math.max(v, min), max)
+
+var graph = fn =>{
+    var width = 10, height = width * (h / w),
+        w = canvas.width, h = canvas.height,
+        px = width * 2 / w,
+        xo = w / 2, yo = h / 2,
+        img = d.createImageData(w, h)
+
+    for(x = 0; x < w; x++){
+        for(y = 0; y < h; y++){
+            var a = (x - xo) * px, b = (y - yo) * px,
+                v = clamp((fn(a, b) + 10) / 20, 0, 1),
+                c = vector_interp(v, [0, 255, 0], [0, 0, 255]),
+                ix = (y * w + x) * 4
+            img.data[ix  ] = c[0]
+            img.data[ix+1] = c[1]
+            img.data[ix+2] = c[2]
+            img.data[ix+3] = 255
+        }
+    }
+
+    d.putImageData(img, 0, 0)
+}
+
+
+// sketch ideas
+
 var jewel = ()=>{
     var jewel_1 = function(){
         swing(function(){ shape(6) }, 9, 189);
@@ -215,39 +268,6 @@ var penta_mosaic = ()=> swing(()=> swing(()=> swing(()=> swing(()=> swing(()=>
 var wild_ride = ()=> swing(()=> swing(()=> swing(()=>
     shape(4), 6, 100), 4, 200), 6, 400)
 
-var wobble = function(freq, amp, phase, radius_center){
-    var n = 0, r = function(){
-        return radius_center + Math.sin(n * freq + phase) * amp; };
-    d.save();
-    d.beginPath();
-    var step = 2*pi / ((radius_center * 2) + 50)
-    d.moveTo(r(), 0);
-    for(; n <= 2*pi; n += step){
-        d.lineTo(r(), 0);
-        d.rotate(step);
-    }
-    d.closePath();
-    d.stroke();
-    palette_fill();
-    d.fill();
-    d.restore();
-};
-
-var spirate = function(bump, twist){
-    range(80).reverse().forEach(function(i){
-        wobble(7, sin(i * pi/50) * bump, twist * i * pi/50, 10 + i * 5)
-    })
-}
-var bump = 40, new_bump = 40, twist = 0, spiration = function(){
-    spirate(bump, twist)
-    twist += .2
-    setTimeout(spiration, 20)
-    if(bump != new_bump){
-        var diff = new_bump - bump
-        bump += 1 * diff / Math.abs(diff)
-    }
-}
-
 var tri_hexa = function(){
     var triseg = function(){
         swing(function(){
@@ -266,28 +286,44 @@ var tri_hexa = function(){
     }, 3, 0);
 };
 
-animate = function(draw){
-    animate.animations.push(draw)
-    animate.frame()
-    animate.t0 = + new Date()
+var spar = (p, n, s) =>{
+    range(n).forEach(i =>{
+        rotate(()=> shape(s), pi / p ** i)
+        rotate(()=> shape(s), -pi / p ** i)
+    })
 }
-animate.frame = function(){
-    t = (+ new Date() - animate.t0) / 1000
-    for(i in animate.animations) animate.animations[i]()
-    if(animate.animations.length) window.requestAnimationFrame(animate.frame)
-}
-animate.stop = function(draw){
-    if(draw) animate.animations.splice(animate.animations.indexOf(draw), 1)
-    else animate.animations = []
-}
-animate.animations = []
+var square_spread = ()=>{
+    rotate(cury(swing, ()=> swing(cury(tri, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
+    swing(cury(lseg, 1000, 0), 8, 0);
 
-//var squares_in_sixes = function(){
-//    a += 1;
-//    if(a % 2) return
-//    palette_index = palette_index % 1;
-//    swing(()=> swing(()=> swing(()=> rotate(()=> shape(4), a / 500), 6, 100), 6, 100), 6, 100)
-//}
+    spar4 = ()=> spar(2, 10, 4)
+    spar4()
+    swing(spar4, 4, 200);
+};
+swing_spread = (n, a) =>{
+    //rays(n)
+    sparn = ()=> spar(a, 10, n)
+    sparn()
+    swing(sparn, n, 200)
+}
+var rays = n =>{
+    rotate(()=> swing(()=> tri(n, 1000), n, 0, 30), pi/n)
+    swing(()=> lseg(1000, 0), n, 0)
+}
+var plaidish = ()=>{
+    swing(cury(swing_spread, 4, 30), 4, 400)
+    scale(cury(swing_spread, 4, 30), 2)
+    scale(cury(swing_spread, 4, 30), .5)
+}
+var hex_tri_spread_swing = ()=>{
+    scale(cury(swing_spread, 6, 30), 2)
+    swing_spread(3, 30)
+    swing(()=> scale(cury(swing_spread, 3, 30), .66), 6, 400)
+}
+
+
+// animations
+
 var Squares = ()=>{ var o = {
     a: 0,
     spin: ()=> rotate(()=> shape(4), o.a),
@@ -306,66 +342,41 @@ var Squares = ()=>{ var o = {
 }; return o }
 squares = Squares()
 
-var square_bang = ()=>{
-    rotate(cury(swing, ()=> swing(cury(tri, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
-    swing(cury(lseg, 1000, 0), 8, 0);
 
-    spar4 = ()=> spar(2, 10, 4)
-    spar4()
-    swing(spar4, 4, 200);
-};
-
-swing_bang = (n, a) =>{
-    rays(n)
-    sparn = ()=> spar(a, 10, n)
-    sparn()
-    swing(sparn, n, 200)
-}
-
-var spar = (p, n, s) =>{
-    range(n).forEach(i =>{
-        rotate(()=> shape(s), pi / p ** i)
-        rotate(()=> shape(s), -pi / p ** i)
-    })
-}
-
-var rays = n =>{
-    rotate(()=> swing(()=> tri(n, 1000), n, 0, 30), pi/n)
-    swing(()=> lseg(1000, 0), n, 0)
-}
-
-var swing_rec = function(draw, scale, n, r, l){
-    if(l == 0) return
-    rotate(()=> swing(()=>{
-        d.save()
-        draw()
-        d.restore()
-        d.scale(scale, scale)
-        swing_rec(draw, scale, n, r, l - 1)
-    }, n, r), 0)
-}
-
-var clamp = (v, min, max) => Math.min(Math.max(v, min), max)
-
-var graph = fn =>{
-    var width = 10, height = width * (h / w),
-        w = canvas.width, h = canvas.height,
-        px = width * 2 / w,
-        xo = w / 2, yo = h / 2,
-        img = d.createImageData(w, h)
-
-    for(x = 0; x < w; x++){
-        for(y = 0; y < h; y++){
-            var a = (x - xo) * px, b = (y - yo) * px,
-                v = clamp((fn(a, b) + 10) / 20, 0, 1),
-                c = vector_interp(v, [0, 255, 0], [0, 0, 255]),
-                ix = (y * w + x) * 4
-            img.data[ix  ] = c[0]
-            img.data[ix+1] = c[1]
-            img.data[ix+2] = c[2]
-            img.data[ix+3] = 255
+var Spiration = ()=>{ var o = {
+    wobble: (freq, amp, phase, radius_center)=>{
+        var n = 0, r = function(){
+            return radius_center + Math.sin(n * freq + phase) * amp; };
+        d.save();
+        d.beginPath();
+        var step = 2*pi / ((radius_center * 2) + 50)
+        d.moveTo(r(), 0);
+        for(; n <= 2*pi; n += step){
+            d.lineTo(r(), 0);
+            d.rotate(step);
         }
-    }
+        d.closePath();
+        d.stroke();
+        palette_fill();
+        d.fill();
+        d.restore();
+    },
 
-    d.putImageData(img, 0, 0)
-}
+    spirate: (bump, twist)=>{
+        range(80).reverse().forEach(function(i){
+            o.wobble(7, sin(i * pi/50) * bump, twist * i * pi/50, 10 + i * 5)
+        })
+    },
+
+    bump: 40, new_bump: 40, twist: 0, rate: .2,
+    spiration: ()=>{
+        o.spirate(o.bump, o.twist)
+        o.twist += o.rate
+        if(o.bump != o.new_bump){
+            var diff = o.new_bump - o.bump
+            o.bump += 1 * diff / Math.abs(diff)
+        }
+    },
+
+    start: ()=> animate(o.spiration)
+}; return o }
