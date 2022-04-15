@@ -1,14 +1,8 @@
 var d, t, pi = Math.PI, palette = [], palette_index = 0,
     sin = Math.sin, cos = Math.cos, pow = Math.pow, canvas
 
-var range = (start, end)=>{
-    if(typeof(end) == "undefined") { end=start; start=0; }
-    var l = [];
-    for (var i = start; i < end; i++){
-        l.push(i)
-    }
-    return l
-}
+
+// func tools
 
 var zip = (list1, list2)=>{
     var ret = [];
@@ -21,11 +15,30 @@ var cury = function(func){
     return ()=> func.apply(null, partial_args.concat(arguments))
 }
 
+
+// num tools
+
+var range = (start, end)=>{
+    if(typeof(end) == "undefined") { end=start; start=0; }
+    var l = [];
+    for (var i = start; i < end; i++){
+        l.push(i)
+    }
+    return l
+}
+
+var clamp = (v, min, max) => Math.min(Math.max(v, min), max)
 var interp = (p, start, end)=> (end - start) * p + start
 var vector_interp = (p, start, end)=>{
     return zip(start, end).map(v => interp(p, v[0], v[1]))
 };
-var css_color = l =>('rgba(' +
+
+
+// draw primitives
+
+var color = l =>('rgba(' +
+    l.slice(0,3).map(v => v * 255).concat(l[3]).join(',') + ')')
+var color32 = l =>('rgba(' +
     l.slice(0,3).map(v => v >> 0).concat(l[3]).join(',') + ')')
 
 var next_index = (list, i) => (i + 1) % list.length
@@ -37,63 +50,10 @@ var get_color = i =>{
 var palette_next = ()=>{
         var color = get_color(palette_index);
         palette_index = next_index(palette, palette_index);
-        return css_color(color);
+        return color32(color);
     }
 var palette_fill = ()=>{ d.fillStyle = palette_next() }
 var palette_stroke = ()=>{ d.strokeStyle = palette_next() }
-
-var init = ()=>{
-    canvas = document.getElementsByTagName('canvas')[0]
-    d = canvas.getContext('2d')
-    window.onresize = ()=> resize(canvas)
-    window.onresize()
-
-    palette = [
-        [5  , 180, 20 , 0.2],
-        [40 , 10 , 240, 0.2]
-    ]
-
-    palette = [
-        [255, 0  , 0  , .2],
-        [0  , 0  , 255, .2],
-        [255, 255, 0  , .2],
-        [255, 0  , 255, .2],
-        [0  , 255, 255, .2]
-    ]
-
-    palette = [
-         [100,20 ,40 ,0.1]
-        ,[255,80 ,0  ,0.1]
-        ,[220,220,70 ,0.1]
-        ,[0  ,100,20 ,0.1]
-        ,[0  ,100,220,0.1]
-    ]
-}
-
-var resize = canvas =>{
-    var pixels = [canvas.clientWidth, canvas.clientHeight],
-        s = canvas.clientWidth / 1000
-    canvas.setAttribute('width', pixels[0])
-    canvas.setAttribute('height', pixels[1])
-    d.translate(pixels[0] / 2, pixels[1] / 2)
-    d.scale(s, s)
-    d.save()
-}
-
-var clear = ()=>{
-    d.restore(); d.save()
-    d.clearRect(-500,-500,1000,1000)
-}
-
-var gfx = draw =>{ return function(){
-    d.save()
-    draw.apply(null, arguments)
-    d.restore()
-} }
-
-var rotate = gfx((draw, a)=>{ d.rotate(a); draw() })
-var trans = gfx((draw, x, y)=>{ d.translate(x, y); draw() })
-var scale = gfx((draw, s)=>{ d.scale(s, s); draw() })
 
 var shape = n =>{
     var seg = a =>{
@@ -112,15 +72,22 @@ var shape = n =>{
     d.restore()
 }
 
-var swing = (draw, slice, r, steps)=>{
-    if(!steps) steps = slice
-    d.save()
-    range(steps).forEach(()=>{
-        trans(draw, r, 0)
-        d.rotate(2*pi/slice)
-    })
-    d.restore()
+var circle = r =>{ d.beginPath(); d.arc(0, 0, r, 0, pi*2); d.stroke(); d.moveTo(0, 0) }
+
+var clear = ()=>{
+    d.restore(); d.save()
+    d.clearRect(-500,-500,1000,1000)
 }
+
+var gfx = draw =>{ return function(){
+    d.save()
+    draw.apply(null, arguments)
+    d.restore()
+} }
+
+var rotate = gfx((draw, a)=>{ d.rotate(a); draw() })
+var trans = gfx((draw, x, y)=>{ d.translate(x, y); draw() })
+var scale = gfx((draw, s)=>{ d.scale(s, s); draw() })
 
 var lsegr = (l, a)=>{
     d.beginPath()
@@ -154,6 +121,13 @@ var vline = w =>{
   d.stroke()
 }
 
+var hline = l =>{
+  d.beginPath()
+  d.moveTo(0, 0)
+  d.lineTo(l, 0)
+  d.stroke()
+}
+
 var slide = (draw, n, width)=>{
   d.save()
   d.translate(-width / 2, 0)
@@ -164,6 +138,9 @@ var slide = (draw, n, width)=>{
   })
   d.restore()
 }
+
+
+// animate tools
 
 animate = function(draw){
     animate.animations.push(draw)
@@ -180,19 +157,6 @@ animate.stop = function(draw){
     else animate.animations = []
 }
 animate.animations = []
-
-var swing_rec = function(draw, scale, n, r, l){
-    if(l == 0) return
-    rotate(()=> swing(()=>{
-        d.save()
-        draw()
-        d.restore()
-        d.scale(scale, scale)
-        swing_rec(draw, scale, n, r, l - 1)
-    }, n, r), 0)
-}
-
-var clamp = (v, min, max) => Math.min(Math.max(v, min), max)
 
 var graph = fn =>{
     var width = 10, height = width * (h / w),
@@ -218,7 +182,118 @@ var graph = fn =>{
 }
 
 
-// sketch ideas
+var resize = canvas =>{
+    var pixels = [canvas.clientWidth, canvas.clientHeight],
+        s = canvas.clientWidth / 1000
+    canvas.setAttribute('width', pixels[0])
+    canvas.setAttribute('height', pixels[1])
+    d.translate(pixels[0] / 2, pixels[1] / 2)
+    d.scale(s, s)
+    d.save()
+}
+
+var init = ()=>{
+    canvas = document.getElementsByTagName('canvas')[0]
+    d = canvas.getContext('2d')
+    window.onresize = ()=> resize(canvas)
+    window.onresize()
+
+    palette = [
+        [5  , 180, 20 , 0.2],
+        [40 , 10 , 240, 0.2]
+    ]
+
+    palette = [
+        [255, 0  , 0  , .2],
+        [0  , 0  , 255, .2],
+        [255, 255, 0  , .2],
+        [255, 0  , 255, .2],
+        [0  , 255, 255, .2]
+    ]
+
+    palette = [
+         [100,20 ,40 ,0.1]
+        ,[255,80 ,0  ,0.1]
+        ,[220,220,70 ,0.1]
+        ,[0  ,100,20 ,0.1]
+        ,[0  ,100,220,0.1]
+    ]
+}
+
+
+// draw combinators
+
+var spar = (p, n, s) =>{
+    range(n).forEach(i =>{
+        rotate(()=> shape(s), pi / p ** i)
+        rotate(()=> shape(s), -pi / p ** i)
+    })
+}
+
+var square_spread = ()=>{
+    rotate(cury(swing, ()=> swing(cury(tri, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
+    swing(cury(lseg, 1000, 0), 8, 0);
+
+    spar4 = ()=> spar(2, 10, 4)
+    spar4()
+    swing(spar4, 4, 200);
+};
+
+swing_spread = (n, a) =>{
+    //rays(n)
+    sparn = ()=> spar(a, 10, n)
+    sparn()
+    swing(sparn, n, 200)
+}
+
+var rays = n =>{
+    rotate(()=> swing(()=> tri(n, 1000), n, 0, 30), pi/n)
+    swing(()=> lseg(1000, 0), n, 0)
+}
+
+var swing = (draw, slice, r, steps)=>{
+    if(!steps) steps = slice
+    d.save()
+    range(steps).forEach(()=>{
+        trans(draw, r, 0)
+        d.rotate(2*pi/slice)
+    })
+    d.restore()
+}
+
+var swing_rec = function(draw, scale, n, r, l){
+    if(l == 0) return
+    rotate(()=> swing(()=>{
+        d.save()
+        draw()
+        d.scale(scale, scale)
+        swing_rec(draw, scale, n, r, l - 1)
+        d.restore()
+    }, n, r), 0)
+}
+var swings_rec = function(draw, scale, n, r, steps, l){
+    if(l == 0) return
+    rotate(()=> swing(()=>{
+        d.save()
+        draw()
+        d.scale(scale, scale)
+        swings_rec(draw, scale, n, r, steps, l - 1)
+        d.restore()
+    }, n, r, steps), 0)
+}
+
+// sketches
+
+var plaidish = ()=>{
+    swing(cury(swing_spread, 4, 30), 4, 400)
+    scale(cury(swing_spread, 4, 30), 2)
+    scale(cury(swing_spread, 4, 30), .5)
+}
+var hex_tri_spread_swing = ()=>{
+    scale(cury(swing_spread, 6, 30), 2)
+    swing_spread(3, 30)
+    swing(()=> scale(cury(swing_spread, 3, 30), .66), 6, 400)
+}
 
 var jewel = ()=>{
     var jewel_1 = function(){
@@ -286,39 +361,34 @@ var tri_hexa = function(){
     }, 3, 0);
 };
 
-var spar = (p, n, s) =>{
-    range(n).forEach(i =>{
-        rotate(()=> shape(s), pi / p ** i)
-        rotate(()=> shape(s), -pi / p ** i)
-    })
+var btree = ()=>{
+    d.lineWidth = 3
+    d.save()
+    d.rotate(-pi/4)
+    swings_rec(()=>{
+        hline(30)
+        d.translate(30, 0)
+        d.rotate(-pi/4)
+    }, .75, 4, 0, 2, 5)
+    d.restore()
 }
-var square_spread = ()=>{
-    rotate(cury(swing, ()=> swing(cury(tri, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
-    swing(cury(lseg, 1000, 0), 8, 0);
 
-    spar4 = ()=> spar(2, 10, 4)
-    spar4()
-    swing(spar4, 4, 200);
-};
-swing_spread = (n, a) =>{
-    //rays(n)
-    sparn = ()=> spar(a, 10, n)
-    sparn()
-    swing(sparn, n, 200)
+var btree_circle = ()=>{
+    d.lineWidth = 3
+    circle(40)
+    swing(()=> hline(40), 6, 40)
+    swing(()=> btree(), 6)
 }
-var rays = n =>{
-    rotate(()=> swing(()=> tri(n, 1000), n, 0, 30), pi/n)
-    swing(()=> lseg(1000, 0), n, 0)
-}
-var plaidish = ()=>{
-    swing(cury(swing_spread, 4, 30), 4, 400)
-    scale(cury(swing_spread, 4, 30), 2)
-    scale(cury(swing_spread, 4, 30), .5)
-}
-var hex_tri_spread_swing = ()=>{
-    scale(cury(swing_spread, 6, 30), 2)
-    swing_spread(3, 30)
-    swing(()=> scale(cury(swing_spread, 3, 30), .66), 6, 400)
+
+tritree = ()=>{ swings_rec(()=>{
+    d.rotate(-pi/2 + pi/10)
+    hline(30)
+    d.translate(30, 0)
+}, .75, 5, 0, 3, 4) }
+
+tritree_wheel = ()=>{
+    circle(24)
+    circle(26)
 }
 
 
@@ -340,8 +410,6 @@ var Squares = ()=>{ var o = {
 
     start: ()=> animate(o.in_sixes)
 }; return o }
-squares = Squares()
-
 
 var Spiration = ()=>{ var o = {
     wobble: (freq, amp, phase, radius_center)=>{
