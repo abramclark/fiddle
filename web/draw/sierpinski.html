@@ -4,11 +4,11 @@ html, body, canvas { margin:0; padding:0; border:0; display:block;
 </style>
 <canvas id=c width=1 height=1></canvas>
 <script>
-var c = document.getElementById('c'), d = c.getContext('2d'),
+var canvas = document.getElementById('c'), d = canvas.getContext('2d'),
     pi = Math.PI, sin = Math.sin, cos = Math.cos,
-    a = 0, go = true;
+    max = Math.max, min = Math.min, floor = Math.floor;
 
-function draw() {
+var draw = scene =>{
     clear();
     d.fillStyle = '#0e9a';
     d.strokeStyle = '#09ea';
@@ -16,11 +16,11 @@ function draw() {
     d.lineJoin = 'round';
 
     d.save();
-    sierpinski(0);
+    sierpinski(scene, 0);
     d.restore();
 }
 
-function triangle(r) {
+var triangle = r =>{
     d.beginPath();
     d.moveTo(0, -r);
     d.lineTo(cos(pi/6)*r, sin(pi/6)*r);
@@ -30,26 +30,26 @@ function triangle(r) {
     d.stroke();
 }
 
-function sierpinski(depth) {
+var sierpinski = (scene, depth)=>{
     var size = 250 / 2**depth;
     d.save();
-    d.rotate(a*(depth+1));
-    d.lineWidth = 50 / (depth+6);
-    triangle(size);
+    d.rotate(scene*(depth+1));
+    d.lineWidth = 50 / (depth+1.5);
+    triangle(size - 20);
 
     for(var i = 0; i < 3; i++) {
         d.rotate(2*pi/3);
         d.save();
         d.translate(0, size);
-        if(depth < 6) {
-            sierpinski(depth + 1);
+        if(depth < 4) {
+            sierpinski(scene, depth + 1);
         }
         d.restore();
     }
     d.restore();
 }
 
-function clear() {
+var clear = ()=>{
     d.fillStyle = '#000';
     d.fillRect(-1000, -1000, 2000, 2000);
 }
@@ -59,19 +59,56 @@ window.onresize = ()=>{
         document.documentElement.clientWidth,
         document.documentElement.clientHeight
     ], scale = Math.min.apply(null, size) / 1000;
-    c.width = size[0];
-    c.height = size[1];
+    canvas.width = size[0];
+    canvas.height = size[1];
     d.translate(size[0] / 2, size[1] / 2);
     d.scale(scale, scale);
     draw();
 };
 window.onresize();
 
-function animate() {
-    draw();
-    a += .001;
-    if(go) window.requestAnimationFrame(animate);
-    go = true;
-}
-animate();
+
+var sinRamp = (from_val, to_val, frame, duration)=>{
+    var range = to_val - from_val, rad_step = pi / (2 * duration), rads = 0,
+        to_frame = frame + duration, o = {};
+
+    o.step = (v, frame) =>{
+        if(frame > to_frame) o.step = (v, _)=> v;
+        rads += rad_step;
+        return sin(rads) * range + from_val;
+    };
+    return o;
+};
+
+var animate = (()=>{
+	var o = {
+        frame: 0,
+        framerate: 60,
+        a: 0,
+        motion: sinRamp(0, pi/16, 0, 180),
+        ts: new Date().getTime()
+    };
+
+	var step = ()=>{
+        o.a = o.motion.step(o.a, o.frame);
+        window.requestAnimationFrame(o.step);
+	    draw(o.a);
+
+        o.frame = (o.frame + 1) % 64800;
+        if(!o.frame % 60) {
+            var ts2 = new Date().getTime();
+            o.framerate = (ts2 - o.ts) / 60;
+            o.ts = ts2;
+        }
+    }
+
+    o.start = ()=>{
+        o.step = step;
+        o.step();
+    };
+    o.stop = ()=>{ o.step = ()=>{} };
+
+    return o;
+})();
+animate.start();
 </script>

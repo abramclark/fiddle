@@ -1,8 +1,8 @@
 from math import *
 try:
     import periodictable as pt # todo: add melting and boiling temps
-except: pass
-
+except ModuleNotFoundError as e:
+    print(e)
 
 Av = 6.022140857e23 # # Avogadro constant
 G = 6.67408e-11 # m**3 / (kg * s) # gravitational constant
@@ -39,3 +39,9 @@ earth_radius_polar = 6356752 # km
 # K = Kelvin
 # acceleration = m / s**2
 # m = meters
+
+
+class Solar:
+    class Earth:
+        mass = 5.97237e+24
+        radius = 6371
