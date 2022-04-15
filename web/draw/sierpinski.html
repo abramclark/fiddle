@@ -1,0 +1,77 @@
+<style>
+html, body, canvas { margin:0; padding:0; border:0; display:block;
+  width:100%; height:100%; }
+</style>
+<canvas id=c width=1 height=1></canvas>
+<script>
+var c = document.getElementById('c'), d = c.getContext('2d'),
+    pi = Math.PI, sin = Math.sin, cos = Math.cos,
+    a = 0, go = true;
+
+function draw() {
+    clear();
+    d.fillStyle = '#0e9a';
+    d.strokeStyle = '#09ea';
+    d.lineWidth = 25;
+    d.lineJoin = 'round';
+
+    d.save();
+    sierpinski(0);
+    d.restore();
+}
+
+function triangle(r) {
+    d.beginPath();
+    d.moveTo(0, -r);
+    d.lineTo(cos(pi/6)*r, sin(pi/6)*r);
+    d.lineTo(cos(5*pi/6)*r, sin(5*pi/6)*r);
+    d.closePath();
+    d.fill();
+    d.stroke();
+}
+
+function sierpinski(depth) {
+    var size = 250 / 2**depth;
+    d.save();
+    d.rotate(a*(depth+1));
+    d.lineWidth = 50 / (depth+6);
+    triangle(size);
+
+    for(var i = 0; i < 3; i++) {
+        d.rotate(2*pi/3);
+        d.save();
+        d.translate(0, size);
+        if(depth < 6) {
+            sierpinski(depth + 1);
+        }
+        d.restore();
+    }
+    d.restore();
+}
+
+function clear() {
+    d.fillStyle = '#000';
+    d.fillRect(-1000, -1000, 2000, 2000);
+}
+
+window.onresize = ()=>{
+    var size = [
+        document.documentElement.clientWidth,
+        document.documentElement.clientHeight
+    ], scale = Math.min.apply(null, size) / 1000;
+    c.width = size[0];
+    c.height = size[1];
+    d.translate(size[0] / 2, size[1] / 2);
+    d.scale(scale, scale);
+    draw();
+};
+window.onresize();
+
+function animate() {
+    draw();
+    a += .001;
+    if(go) window.requestAnimationFrame(animate);
+    go = true;
+}
+animate();
+</script>

@@ -1,5 +1,8 @@
 from math import *
-import periodictable as pt # todo: add melting and boiling temps
+try:
+    import periodictable as pt # todo: add melting and boiling temps
+except: pass
+
 
 Av = 6.022140857e23 # # Avogadro constant
 G = 6.67408e-11 # m**3 / (kg * s) # gravitational constant
@@ -10,6 +13,7 @@ hj = 6.626070040e-34 # J * s # planck constant in Joules
 heV = 4.135667662e-15 # eV * s # planck constant in electron volts
 R = 8.3144598 # molar, ideal, or universal gas constant
 kb = R / Av # Boltzmann constant in entropy
+coulomb = 6241509074460762607.776
 
 mevtokg = 9.0958e-31 # conversion of MeV to Kg
 
@@ -25,8 +29,12 @@ fahrenheit_to_k = lambda a: celsius_to_k(fahrenheit_to_celsius(a))
 
 # incidental constants
 atm = 101325 # P # 1 atmosphere # pressure at altitude 0
+solar_mass = 1.98847E30 # kg
+earth_mass = 5.97237E24 # kg
+earth_radius_equator = 6378137 # km
+earth_radius_polar = 6356752 # km
 
-# J = kg * m**2 / s**2 = joules
+#r J = kg * m**2 / s**2 = joules
 # P = kg /( m * s**2 ) = pascals = pressure
 # K = Kelvin
 # acceleration = m / s**2
