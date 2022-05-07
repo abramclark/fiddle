@@ -36,10 +36,11 @@ var vector_interp = (p, start, end)=>{
 
 // draw primitives
 
-var color = l =>('rgba(' +
+var rgb = l =>('rgba(' +
     l.slice(0,3).map(v => v * 255).concat(l[3]).join(',') + ')')
-var color32 = l =>('rgba(' +
-    l.slice(0,3).map(v => v >> 0).concat(l[3]).join(',') + ')')
+var rgb8 = l =>('rgba(' + l.slice(0,3).concat(l[3]).join(',') + ')')
+var hsl = c => `hsla(${c[0] * 360},${c[1] * 100}%,${c[2] * 100}%,${c[3]})`
+var color = rgb8
 
 var next_index = (list, i) => (i + 1) % list.length
 var get_color = i =>{
@@ -48,26 +49,28 @@ var get_color = i =>{
         palette[next_index(palette, index)])
 }
 var palette_next = ()=>{
-        var color = get_color(palette_index);
-        palette_index = next_index(palette, palette_index);
-        return color32(color);
-    }
+    var c = get_color(palette_index);
+    palette_index = next_index(palette, palette_index);
+    return color(c);
+}
 var palette_fill = ()=>{ d.fillStyle = palette_next() }
 var palette_stroke = ()=>{ d.strokeStyle = palette_next() }
 
-var shape = n =>{
+var shape = (n, r)=>{
+    if(!r) r = 100;
     var seg = a =>{
-        d.rotate(pi*2/a)
-        d.lineTo(100,0)
+        d.rotate(2*pi/a)
+        d.lineTo(r, 0)
     }
 
     d.save()
     d.beginPath()
-    d.moveTo(100,0)
+    d.moveTo(r, 0)
     range(n-1).forEach(()=> seg(n))
     d.closePath()
-    palette_fill()
+    palette_stroke()
     d.stroke()
+    palette_fill()
     d.fill()
     d.restore()
 }
@@ -144,8 +147,8 @@ var slide = (draw, n, width)=>{
 
 animate = function(draw){
     animate.animations.push(draw)
-    animate.frame()
     animate.t0 = + new Date()
+    if(animate.animations.length == 1) animate.frame()
 }
 animate.frame = function(){
     t = (+ new Date() - animate.t0) / 1000
@@ -200,24 +203,36 @@ var init = ()=>{
 
     palette = [
         [5  , 180, 20 , 0.2],
-        [40 , 10 , 240, 0.2]
+        [40 , 10 , 240, 0.2],
     ]
+    color = rgb8
 
     palette = [
         [255, 0  , 0  , .2],
         [0  , 0  , 255, .2],
         [255, 255, 0  , .2],
         [255, 0  , 255, .2],
-        [0  , 255, 255, .2]
+        [0  , 255, 255, .2],
     ]
+    color = rgb8
 
     palette = [
-         [100,20 ,40 ,0.1]
-        ,[255,80 ,0  ,0.1]
-        ,[220,220,70 ,0.1]
-        ,[0  ,100,20 ,0.1]
-        ,[0  ,100,220,0.1]
+        [0.807843137254902, 0.3607843137254902, 0.0, 0.06],
+        [0.12549019607843137, 0.2901960784313726, 0.5294117647058824, 0.06],
+        [0.3607843137254902, 0.20784313725490197, 0.4, 0.06],
+        [0.5607843137254902, 0.34901960784313724, 0.00784313725490196, 0.06],
+        [0.6431372549019608, 0.0, 0.0, 0.06],
     ]
+    color = rgb
+
+    //palette = [
+    //    [0.0744336569579288, 1.0, 0.403921568627451, 0.1],
+    //    [0.598705501618123, 0.6167664670658682, 0.32745098039215687, 0.1],
+    //    [0.7993197278911565, 0.3161290322580645, 0.303921568627451, 0.1],
+    //    [0.10283687943262411, 0.9724137931034483, 0.28431372549019607, 0.1],
+    //    [0.0, 1.0, 0.3215686274509804, 0.1],
+    //]
+    //color = hsl
 }
 
 
@@ -261,25 +276,25 @@ var swing = (draw, slice, r, steps)=>{
     d.restore()
 }
 
-var swing_rec = function(draw, scale, n, r, l){
+var swing_rec = (draw, scale, slice, r, l)=>{
     if(l == 0) return
-    rotate(()=> swing(()=>{
+    swing(()=>{
         d.save()
         draw()
         d.scale(scale, scale)
-        swing_rec(draw, scale, n, r, l - 1)
+        swing_rec(draw, scale, slice, r, l - 1)
         d.restore()
-    }, n, r), 0)
+    }, slice, r)
 }
-var swings_rec = function(draw, scale, n, r, steps, l){
+var swings_rec = (draw, scale, slice, r, steps, l)=>{
     if(l == 0) return
-    rotate(()=> swing(()=>{
+    swing(()=>{
         d.save()
         draw()
         d.scale(scale, scale)
-        swings_rec(draw, scale, n, r, steps, l - 1)
+        swings_rec(draw, scale, slice, r, steps, l - 1)
         d.restore()
-    }, n, r, steps), 0)
+    }, slice, r, steps)
 }
 
 // sketches
@@ -394,21 +409,26 @@ tritree_wheel = ()=>{
 
 // animations
 
-var Squares = ()=>{ var o = {
+var Sixes = ()=>{ var o = {
     a: 0,
-    spin: ()=> rotate(()=> shape(4), o.a),
+    spin: ()=> rotate(()=> shape(3), o.a),
 
     f: 0, in_sixes: ()=>{
         o.f += 1
         if(o.f % 2) return
 
         o.a = t / 10
-        palette_index = o.a % palette.length
+        palette_index = (t / 20) % palette.length
         swing_rec(o.spin, .5, 8, 300, 3)
-        swing(()=> swing(()=> swing(o.spin, 6, 100), 6, 100), 6, 100)
+        swing_rec(o.spin, 1, 6, 100, 3)
     },
 
-    start: ()=> animate(o.in_sixes)
+    start: ()=>{
+        palette_index = 1
+        palette_fill()
+        range(10).map(()=>{ d.fillRect(-500, -500, 1000, 1000) })
+        animate(o.in_sixes); return o
+    }
 }; return o }
 
 var Spiration = ()=>{ var o = {
@@ -446,5 +466,5 @@ var Spiration = ()=>{ var o = {
         }
     },
 
-    start: ()=> animate(o.spiration)
+    start: ()=>{ animate(o.spiration); return o }
 }; return o }
