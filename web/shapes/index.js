@@ -1,4 +1,4 @@
-var d, t, pi = Math.PI, palette = [], palette_index = 0,
+var d, t = 0, pi = Math.PI, palette = [], palette_index = 0,
     sin = Math.sin, cos = Math.cos, pow = Math.pow, canvas
 
 
@@ -12,18 +12,17 @@ var zip = (list1, list2)=>{
 
 var cury = function(func){
     var partial_args = Array.prototype.slice.call(arguments, 1);
-    return ()=> func.apply(null, partial_args.concat(arguments))
+    return function() { func.apply(null, partial_args.concat(arguments)) }
 }
 
 
 // num tools
 
-var range = (start, end)=>{
+var range = (start, end, step)=>{
     if(typeof(end) == "undefined") { end=start; start=0; }
+    if(!step) step = 1;
     var l = [];
-    for (var i = start; i < end; i++){
-        l.push(i)
-    }
+    for (var i = start; i < end; i += step) l.push(i);
     return l
 }
 
@@ -32,6 +31,7 @@ var interp = (p, start, end)=> (end - start) * p + start
 var vector_interp = (p, start, end)=>{
     return zip(start, end).map(v => interp(p, v[0], v[1]))
 };
+var norm = v => (v[0]**2 + v[1]**2)**0.5
 
 
 // draw primitives
@@ -40,7 +40,7 @@ var rgb = l =>('rgba(' +
     l.slice(0,3).map(v => v * 255).concat(l[3]).join(',') + ')')
 var rgb8 = l =>('rgba(' + l.slice(0,3).concat(l[3]).join(',') + ')')
 var hsl = c => `hsla(${c[0] * 360},${c[1] * 100}%,${c[2] * 100}%,${c[3]})`
-var color = rgb8
+var color = rgb
 
 var next_index = (list, i) => (i + 1) % list.length
 var get_color = i =>{
@@ -92,17 +92,7 @@ var rotate = gfx((draw, a)=>{ d.rotate(a); draw() })
 var trans = gfx((draw, x, y)=>{ d.translate(x, y); draw() })
 var scale = gfx((draw, s)=>{ d.scale(s, s); draw() })
 
-var lsegr = (l, a)=>{
-    d.beginPath()
-    d.moveTo(0, 0)
-    d.rotate(a)
-    d.translate(l, 0)
-    d.lineTo(0, 0)
-    // palette_stroke()
-    d.stroke()
-}, lseg = gfx(lsegr)
-
-var tri = (slice, r)=>{
+var pieslice = (slice, r)=>{
     var a = 2*pi/slice
     d.save()
     d.beginPath()
@@ -131,13 +121,13 @@ var hline = l =>{
   d.stroke()
 }
 
-var slide = (draw, n, width)=>{
+var repeaty = (draw, n, width)=>{
   d.save()
-  d.translate(-width / 2, 0)
+  d.translate(0, -width / 2)
   var ow = width / n
   range(n).forEach(()=>{
     draw()
-    d.translate(ow, 0)
+    d.translate(0, ow)
   })
   d.restore()
 }
@@ -201,70 +191,42 @@ var init = ()=>{
     window.onresize = ()=> resize(canvas)
     window.onresize()
 
-    palette = [
-        [5  , 180, 20 , 0.2],
-        [40 , 10 , 240, 0.2],
-    ]
-    color = rgb8
+    palettes = []
 
-    palette = [
-        [255, 0  , 0  , .2],
-        [0  , 0  , 255, .2],
-        [255, 255, 0  , .2],
-        [255, 0  , 255, .2],
-        [0  , 255, 255, .2],
-    ]
-    color = rgb8
+    palettes.push([
+        [0.0196, 0.7058, 0.0784, 0.2],
+        [0.1568, 0.0392, 0.9411, 0.2],
+    ])
 
-    palette = [
-        [0.807843137254902, 0.3607843137254902, 0.0, 0.06],
-        [0.12549019607843137, 0.2901960784313726, 0.5294117647058824, 0.06],
-        [0.3607843137254902, 0.20784313725490197, 0.4, 0.06],
-        [0.5607843137254902, 0.34901960784313724, 0.00784313725490196, 0.06],
-        [0.6431372549019608, 0.0, 0.0, 0.06],
-    ]
-    color = rgb
+    palettes.push([
+        [1, 0, 0, .2],
+        [0, 0, 1, .2],
+        [1, 1, 0, .2],
+        [1, 0, 1, .2],
+        [0, 1, 1, .2],
+    ])
 
-    //palette = [
-    //    [0.0744336569579288, 1.0, 0.403921568627451, 0.1],
-    //    [0.598705501618123, 0.6167664670658682, 0.32745098039215687, 0.1],
-    //    [0.7993197278911565, 0.3161290322580645, 0.303921568627451, 0.1],
-    //    [0.10283687943262411, 0.9724137931034483, 0.28431372549019607, 0.1],
-    //    [0.0, 1.0, 0.3215686274509804, 0.1],
-    //]
+    palettes.push([
+        [0.8078, 0.3607, 0.0000, 0.06],
+        [0.1254, 0.2901, 0.5294, 0.06],
+        [0.3607, 0.2078, 0.4000, 0.06],
+        [0.5607, 0.3490, 0.0078, 0.06],
+        [0.6431, 0.0000, 0.0000, 0.06],
+    ])
+    palette = palettes[2]
+
+    //palettes.push([
+    //    [0.0744, 1.0000, 0.4039, 0.1],
+    //    [0.5987, 0.6167, 0.3274, 0.1],
+    //    [0.7993, 0.3161, 0.3039, 0.1],
+    //    [0.1028, 0.9724, 0.2843, 0.1],
+    //    [0.0000, 1.0000, 0.3215, 0.1],
+    //])
     //color = hsl
 }
 
 
-// draw combinators
-
-var spar = (p, n, s) =>{
-    range(n).forEach(i =>{
-        rotate(()=> shape(s), pi / p ** i)
-        rotate(()=> shape(s), -pi / p ** i)
-    })
-}
-
-var square_spread = ()=>{
-    rotate(cury(swing, ()=> swing(cury(tri, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
-    swing(cury(lseg, 1000, 0), 8, 0);
-
-    spar4 = ()=> spar(2, 10, 4)
-    spar4()
-    swing(spar4, 4, 200);
-};
-
-swing_spread = (n, a) =>{
-    //rays(n)
-    sparn = ()=> spar(a, 10, n)
-    sparn()
-    swing(sparn, n, 200)
-}
-
-var rays = n =>{
-    rotate(()=> swing(()=> tri(n, 1000), n, 0, 30), pi/n)
-    swing(()=> lseg(1000, 0), n, 0)
-}
+// radial combinators
 
 var swing = (draw, slice, r, steps)=>{
     if(!steps) steps = slice
@@ -297,7 +259,73 @@ var swings_rec = (draw, scale, slice, r, steps, l)=>{
     }, slice, r, steps)
 }
 
+// grid combinators
+
+grid = (draw, cx, cy, w)=>{
+    d.save()
+    d.translate(-w*(cx-1)/2, -w*(cy-1)/2)
+    range(-1, 1 + 1/w, 2 / (cx - 1)).forEach(x =>{
+        d.save()
+        range(-1, 1 + 1/w, 2 / (cy - 1)).forEach(y =>{
+            draw([x, y])
+            d.translate(0, w)
+        })
+        d.restore()
+        d.translate(w, 0)
+    })
+    d.restore()
+}
+
+trihatch = (draw, w)=>{
+    if(!draw) draw = ()=> shape(2, 500)
+    if(!w) w = 20
+    d.save()
+    range(3).forEach(()=>{
+        repeaty(draw, 1000 / w, 1000)
+        d.rotate(pi/3)
+    })
+    d.restore()
+}
+
+hatch = (draw, w)=>{
+    if(!draw) draw = ()=> shape(2, 500)
+    if(!w) w = 20
+    d.save()
+    repeaty(draw, 1000 / w, 1000)
+    d.rotate(pi/2)
+    repeaty(draw, 1000 / w, 1000)
+    d.restore()
+}
+
 // sketches
+
+var spar = (draw, p, n) =>{
+    range(n).forEach(i =>{
+        rotate(draw, pi / p ** i)
+        rotate(draw, -pi / p ** i)
+    })
+}
+
+var square_spread = ()=>{
+    rotate(cury(swing, ()=> swing(cury(pieslice, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
+    swing(cury(shape, 500), 8, 0);
+
+    spar4 = ()=> spar(()=> shape(4), 2, 10)
+    spar4()
+    swing(spar4, 4, 200);
+};
+
+swing_spread = (n, a) =>{
+    //rays(n)
+    sparn = ()=> spar(()=> shape(n), a, 10)
+    sparn()
+    swing(sparn, n, 200)
+}
+
+var rays = n =>{
+    rotate(()=> swing(()=> pieslice(n, 1000), n, 0, 30), pi/n)
+    swing(()=> shape(2, 500), n, 0)
+}
 
 var plaidish = ()=>{
     swing(cury(swing_spread, 4, 30), 4, 400)
