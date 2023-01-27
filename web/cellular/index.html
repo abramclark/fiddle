@@ -26,6 +26,12 @@ var rules = {
         avg + exp(avg) / (300 + (sin(t/200) + 1)*400) :
         min(a + b, a + c, b + c) * .49
 },
+    rule_30: (a, b, c) => {
+    return a ^ (b | c)
+    // implements Wolfram's "Rule 30"
+    // https://en.wikipedia.org/wiki/Rule_30
+    // only works with tri, dots, dot, or custom
+},
     pi_grey: (a, b, c) =>{
     let avg = (a + b + c) / 3
     return avg + sin(avg)
