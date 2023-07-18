@@ -1,5 +1,5 @@
 var d, t = 0, pi = Math.PI, palette = [], palette_index = 0,
-    sin = Math.sin, cos = Math.cos, pow = Math.pow, canvas
+    sin = Math.sin, cos = Math.cos, pow = Math.pow, canvas, svg
 
 
 // func tools
@@ -10,7 +10,7 @@ var zip = (list1, list2)=>{
     return ret;
 };
 
-var cury = function(func){
+var fn = function(func){
     var partial_args = Array.prototype.slice.call(arguments, 1);
     return function() { func.apply(null, partial_args.concat(arguments)) }
 }
@@ -88,11 +88,13 @@ var clear = ()=>{
     d.clearRect(-500,-500,1000,1000)
 }
 
-var gfx = draw =>{ return function(){
-    d.save()
-    draw.apply(null, arguments)
-    d.restore()
-} }
+var gfx = draw =>{
+    return function(){ return ()=>{
+        d.save()
+        draw.apply(null, arguments)
+        d.restore()
+    } }
+}
 
 var rotate = gfx((draw, a)=>{ d.rotate(a); draw() })
 var trans = gfx((draw, x, y)=>{ d.translate(x, y); draw() })
@@ -129,15 +131,21 @@ var hline = l =>{
     d.stroke()
 }
 
-var repeaty = (draw, n, width)=>{
-  d.save()
-  d.translate(0, -width / 2)
-  var ow = width / n
-  range(n).forEach(()=>{
-    draw()
-    d.translate(0, ow)
-  })
-  d.restore()
+
+// interactive / SVG primitives
+
+var ishape = points =>{
+    var p = (a, b)=>{
+        var p = svg.createSVGPoint()
+        p.x = a
+        p.y = b
+        return p
+    }
+    var svgns = 'http://www.w3.org/2000/svg' 
+    var el = document.createElementNS(svgns, 'polygon')
+    points.forEach(([a, b])=> el.points.appendItem(p(a, b)))
+    svg.appendChild(el)
+    return el
 }
 
 
@@ -192,10 +200,13 @@ var resize = canvas =>{
     d.translate(pixels[0] / 2, pixels[1] / 2)
     d.scale(s, s)
     d.save()
+
+    svg.setAttribute('viewBox', [-500, -pixels[1] / 2, 1000, pixels[1]])
 }
 
 var init = ()=>{
     canvas = document.getElementsByTagName('canvas')[0]
+    svg = document.getElementsByTagName('svg')[0]
     d = canvas.getContext('2d')
     window.onresize = ()=> resize(canvas)
     window.onresize()
@@ -206,23 +217,6 @@ var init = ()=>{
         [0.0196, 0.7058, 0.0784, 0.2],
         [0.1568, 0.0392, 0.9411, 0.2],
     ])
-
-    palettes.push([
-        [1, 0, 0, .2],
-        [0, 0, 1, .2],
-        [1, 1, 0, .2],
-        [1, 0, 1, .2],
-        [0, 1, 1, .2],
-    ])
-
-    palettes.push([
-        [0.807843137254902, 0.3607843137254902, 0.0, 0.06],
-        [0.12549019607843137, 0.2901960784313726, 0.5294117647058824, 0.06],
-        [0.3607843137254902, 0.20784313725490197, 0.4, 0.06],
-        [0.5607843137254902, 0.34901960784313724, 0.00784313725490196, 0.06],
-        [0.6431372549019608, 0.0, 0.0, 0.06],
-    ])
-    color = rgb
 
     palettes.push([
         [.5,  0, .3, .2],
@@ -239,7 +233,6 @@ var init = ()=>{
         [0.5607, 0.3490, 0.0078, 0.06],
         [0.6431, 0.0000, 0.0000, 0.06],
     ])
-
     palette = palettes[2]
 
     //palettes.push([
@@ -255,15 +248,15 @@ var init = ()=>{
 
 // radial combinators
 
-var swing = (draw, slice, r, steps)=>{
+var swing = (draw, slice, r, steps)=>{ return ()=>{
     if(!steps) steps = slice
     d.save()
     range(steps).forEach(()=>{
-        trans(draw, r, 0)
+        trans(draw, r, 0)()
         d.rotate(2*pi/slice)
     })
     d.restore()
-}
+} }
 
 var swing_rec = (draw, scale, slice, r, l)=>{
     if(l == 0) return
@@ -275,6 +268,7 @@ var swing_rec = (draw, scale, slice, r, l)=>{
         d.restore()
     }, slice, r)
 }
+
 var swings_rec = (draw, scale, slice, r, steps, l)=>{
     if(l == 0) return
     swing(()=>{
@@ -287,9 +281,35 @@ var swings_rec = (draw, scale, slice, r, steps, l)=>{
 }
 
 
-// grid combinators
+// linear combinators
 
-grid = (draw, cx, cy, w)=>{
+var repeaty = (draw, n, width)=>{
+  d.save()
+  d.translate(0, -width / 2)
+  var ow = width / n
+  range(n).forEach(()=>{
+    draw()
+    d.translate(0, ow)
+  })
+  d.restore()
+}
+
+grid = (draw, cx, cy, w, h)=>{ return ()=>{
+    d.save()
+    d.translate(-w*(cx-1)/2, -w*(cy-1)/2)
+    range(w).forEach(x =>{
+        d.save()
+        range(h).forEach(y =>{
+            draw([2*x / w - 1, 2*y / h - 2])
+            d.translate(0, cy)
+        })
+        d.restore()
+        d.translate(cx, 0)
+    })
+    d.restore()
+} }
+
+dumb_grid = (draw, cx, cy, w)=>{
     d.save()
     d.translate(-w*(cx-1)/2, -w*(cy-1)/2)
     range(-1, 1 + 1/w, 2 / (cx - 1)).forEach(x =>{
@@ -325,21 +345,6 @@ hatch = (draw, w)=>{
     d.restore()
 }
 
-dumb_grid = (draw, cx, cy, w)=>{
-    d.save()
-    d.translate(-w*(cx-1)/2, -w*(cy-1)/2)
-    range(-1, 1 + 1/w, 2 / (cx - 1)).forEach(x =>{
-        d.save()
-        range(-1, 1 + 1/w, 2 / (cy - 1)).forEach(y =>{
-            draw([x, y])
-            d.translate(0, w)
-        })
-        d.restore()
-        d.translate(w, 0)
-    })
-    d.restore()
-}
-
 
 // sketches
 
@@ -351,8 +356,8 @@ var spar = (draw, p, n) =>{
 }
 
 var square_spread = ()=>{
-    rotate(cury(swing, ()=> swing(cury(pieslice, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
-    swing(cury(shape, 500), 8, 0);
+    rotate(fn(swing, ()=> swing(fn(pieslice, 8, 1000), 8, 0), pi/8, 0, 2), pi/8)
+    swing(fn(shape, 500), 8, 0);
 
     spar4 = ()=> spar(()=> shape(4), 2, 10)
     spar4()
@@ -372,14 +377,14 @@ var rays = n =>{
 }
 
 var plaidish = ()=>{
-    swing(cury(swing_spread, 4, 30), 4, 400)
-    scale(cury(swing_spread, 4, 30), 2)
-    scale(cury(swing_spread, 4, 30), .5)
+    swing(fn(swing_spread, 4, 30), 4, 400)
+    scale(fn(swing_spread, 4, 30), 2)
+    scale(fn(swing_spread, 4, 30), .5)
 }
 var hex_tri_spread_swing = ()=>{
-    scale(cury(swing_spread, 6, 30), 2)
+    scale(fn(swing_spread, 6, 30), 2)
     swing_spread(3, 30)
-    swing(()=> scale(cury(swing_spread, 3, 30), .66), 6, 400)
+    swing(()=> scale(fn(swing_spread, 3, 30), .66), 6, 400)
 }
 
 var jewel = ()=>{

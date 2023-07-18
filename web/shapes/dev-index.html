@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src='dev-index.js'></script>
+<style>
+
+body { margin: 0; height: 100%; background-color: white; }
+img, canvas, svg {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+}
+img { z-index: 0 }
+canvas { z-index: 1 }
+svg { z-index: 2 }
+
+</style>
+</head>
+<body>
+<!-- <img src='sky.jpg'> -->
+<canvas width='1024' height='768'></canvas>
+<svg width='1024' height='768'></svg>
+<script>init();</script>
+</body>
+</html>

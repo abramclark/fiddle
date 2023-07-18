@@ -1,0 +1,24 @@
+<style>
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+#btn {
+    border: solid 2px green;
+    padding: 1em;
+    display: inline-block;
+    border-radius: 1em;
+    font-size: large;
+    margin: 5em;
+    display: inline-block;
+
+    transform: scale(1, 1);
+    transition: transform 1s;
+}
+#btn:hover {
+    transform: scale(3, 3);
+    transition: transform 1s;
+}
+</style>
+<button id='btn'>hey there</button>
+
