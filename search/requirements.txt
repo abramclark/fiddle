@@ -1,0 +1,5 @@
+ipython
+numpy~=1.18
+gensim~=4.3
+beautifulsoup4~=4.12
+spacy-universal-sentence-encoder~=0.4
